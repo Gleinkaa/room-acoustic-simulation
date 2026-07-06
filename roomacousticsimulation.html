@@ -1,0 +1,2064 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Studio Acoustic Simulation – 5.9 × 2.9 × 2.5 m</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #1e2530;
+      --surface3: #252d3a;
+      --accent: #00d4ff;
+      --accent2: #7c3aed;
+      --accent3: #10b981;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --text: #e6edf3;
+      --text2: #8b949e;
+      --border: #30363d;
+      --panel-color: rgba(0, 212, 255, 0.18);
+      --trap-color: rgba(124, 58, 237, 0.35);
+      --speaker-color: #f59e0b;
+      --desk-color: #4b5563;
+      --listening-color: #10b981;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--surface), var(--surface2));
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px
+    }
+
+    header h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent
+    }
+
+    header span {
+      color: var(--text2);
+      font-size: .85rem
+    }
+
+    .badge {
+      background: var(--surface3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: .75rem;
+      color: var(--accent)
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 0;
+      height: calc(100vh - 57px)
+    }
+
+    .main {
+      overflow-y: auto;
+      padding: 20px
+    }
+
+    .sidebar {
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 16px
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 4px
+    }
+
+    .tab {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: none;
+      color: var(--text2);
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: .82rem;
+      font-family: 'Inter', sans-serif;
+      transition: .2s
+    }
+
+    .tab.active {
+      background: var(--surface3);
+      color: var(--accent);
+      font-weight: 600
+    }
+
+    .tab-content {
+      display: none
+    }
+
+    .tab-content.active {
+      display: block
+    }
+
+    /* Canvas */
+    .canvas-wrap {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      position: relative
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      image-rendering: crisp-edges
+    }
+
+    .canvas-label {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, .6);
+      color: var(--text2);
+      font-size: .72rem;
+      padding: 4px 10px;
+      border-radius: 4px;
+      backdrop-filter: blur(4px)
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .78rem;
+      color: var(--text2)
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      flex-shrink: 0
+    }
+
+    /* Info cards */
+    .card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 12px
+    }
+
+    .card h3 {
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .card h3 .icon {
+      font-size: 1rem
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .stat-row:last-child {
+      border-bottom: none
+    }
+
+    .stat-label {
+      font-size: .78rem;
+      color: var(--text2)
+    }
+
+    .stat-val {
+      font-size: .82rem;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text)
+    }
+
+    .stat-val.good {
+      color: var(--accent3)
+    }
+
+    .stat-val.warn {
+      color: var(--warn)
+    }
+
+    .stat-val.bad {
+      color: var(--danger)
+    }
+
+    /* Priority list */
+    .priority-item {
+      display: flex;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      align-items: flex-start
+    }
+
+    .priority-item:last-child {
+      border-bottom: none
+    }
+
+    .priority-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent2);
+      color: #fff;
+      font-size: .72rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+
+    .priority-text {
+      font-size: .78rem;
+      color: var(--text2);
+      line-height: 1.5
+    }
+
+    .priority-text strong {
+      color: var(--text);
+      display: block;
+      margin-bottom: 2px
+    }
+
+    /* Mode slider */
+    .ctrl-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px
+    }
+
+    .ctrl-label {
+      font-size: .78rem;
+      color: var(--text2);
+      min-width: 100px
+    }
+
+    input[type=range] {
+      flex: 1;
+      accent-color: var(--accent);
+      height: 4px
+    }
+
+    .ctrl-val {
+      font-size: .78rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent);
+      min-width: 50px;
+      text-align: right
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap
+    }
+
+    .btn {
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      background: var(--surface3);
+      color: var(--text);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: .78rem;
+      font-family: 'Inter', sans-serif;
+      transition: .2s
+    }
+
+    .btn:hover {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    .btn.active {
+      border-color: var(--accent);
+      background: rgba(0, 212, 255, .1);
+      color: var(--accent)
+    }
+
+    /* Mode frequencies */
+    .freq-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px
+    }
+
+    .freq-chip {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: .72rem;
+      font-family: 'JetBrains Mono', monospace;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface3);
+      color: var(--text2);
+      transition: .2s
+    }
+
+    .freq-chip:hover {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    .freq-chip.active {
+      border-color: var(--accent);
+      background: rgba(0, 212, 255, .15);
+      color: var(--accent)
+    }
+
+    .freq-chip.problem {
+      border-color: var(--danger);
+      color: var(--danger)
+    }
+
+    .freq-chip.warn {
+      border-color: var(--warn);
+      color: var(--warn)
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .78rem
+    }
+
+    th {
+      text-align: left;
+      color: var(--text2);
+      font-weight: 500;
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border)
+    }
+
+    td {
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text)
+    }
+
+    tr:last-child td {
+      border-bottom: none
+    }
+
+    td.mono {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent)
+    }
+
+    td.severity-high {
+      color: var(--danger)
+    }
+
+    td.severity-med {
+      color: var(--warn)
+    }
+
+    td.severity-low {
+      color: var(--accent3)
+    }
+
+    .section-title {
+      font-size: .72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text2);
+      margin: 14px 0 8px
+    }
+
+    /* Tooltip */
+    .tooltip {
+      position: absolute;
+      background: rgba(0, 0, 0, .85);
+      color: var(--text);
+      font-size: .75rem;
+      padding: 6px 10px;
+      border-radius: 6px;
+      pointer-events: none;
+      display: none;
+      white-space: nowrap;
+      z-index: 10;
+      font-family: 'JetBrains Mono', monospace;
+      border: 1px solid var(--border)
+    }
+
+    .info-box {
+      background: rgba(0, 212, 255, .05);
+      border: 1px solid rgba(0, 212, 255, .2);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: .78rem;
+      color: var(--text2);
+      line-height: 1.6;
+      margin-bottom: 10px
+    }
+
+    .info-box strong {
+      color: var(--accent)
+    }
+
+    /* Standing wave bar */
+    .sw-bar-wrap {
+      margin-bottom: 8px
+    }
+
+    .sw-bar-label {
+      font-size: .72rem;
+      color: var(--text2);
+      margin-bottom: 3px;
+      display: flex;
+      justify-content: space-between
+    }
+
+    .sw-bar-track {
+      background: var(--surface3);
+      border-radius: 4px;
+      height: 8px;
+      overflow: hidden
+    }
+
+    .sw-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: .4s
+    }
+
+    .animate-pulse {
+      animation: pulse 2s ease-in-out infinite
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .6
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div>
+      <h1>🎚 Studio Acoustic Simulation</h1>
+      <span>5.3 m × 2.77 m × 2.5 m &nbsp;|&nbsp; ADAM A7V Monitors &nbsp;|&nbsp; Psytrance / Electronic
+        Production</span>
+    </div>
+    <div class="badge">No Treatment → Full Plan</div>
+  </header>
+
+  <div class="layout">
+    <div class="main">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('room')">🏠 Room Plan</button>
+        <button class="tab" onclick="switchTab('waves')">〰️ Standing Waves</button>
+        <button class="tab" onclick="switchTab('treatment')">📐 Treatment Plan</button>
+        <button class="tab" onclick="switchTab('specs')">📋 Panel Specs</button>
+      </div>
+
+      <!-- TAB: ROOM -->
+      <div id="tab-room" class="tab-content active">
+        <div class="ctrl-row" id="roomHeatmapCtrl"
+          style="margin-bottom: 12px; padding: 10px; background: rgba(0,0,0,0.3); border-left: 3px solid var(--accent); border-radius: 4px;">
+
+          <div style="flex: 1; margin-right: 15px;">
+            <div style="font-size: 0.75rem; color: var(--text2); margin-bottom: 4px;">Live Heatmap Freq</div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <input type="range" id="freqSliderRoom" min="20" max="400" value="58" oninput="syncFreq(this.value)"
+                style="flex: 1;">
+              <span class="ctrl-val" id="freqValRoom" style="min-width: 45px; text-align: right;">58 Hz</span>
+            </div>
+          </div>
+
+          <div style="flex: 1;">
+            <div style="font-size: 0.75rem; color: var(--text2); margin-bottom: 4px;">Speaker Width</div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <input type="range" id="spkWidthSlider" min="40" max="250" value="119" oninput="syncSpkWidth(this.value)"
+                style="flex: 1;">
+              <span class="ctrl-val" id="spkWidthVal" style="min-width: 45px; text-align: right;">119 cm</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="ctrl-row"
+          style="margin-bottom: 2px; padding: 10px; background: rgba(0,0,0,0.2); border-left: 3px solid #10b981; border-radius: 4px; display:flex; gap:15px; flex-wrap:wrap;">
+          <div style="display:flex; flex-direction:column;">
+            <div style="font-size:0.7rem; color:var(--text2); margin-bottom:4px;">Room Length (cm)</div>
+            <input type="number" id="inputDimL" value="530" onchange="applyDimensions()"
+              style="width:70px; background:var(--surface); border:1px solid #334155; color:#fff; padding:4px; border-radius:3px;">
+          </div>
+          <div style="display:flex; flex-direction:column;">
+            <div style="font-size:0.7rem; color:var(--text2); margin-bottom:4px;">Room Width (cm)</div>
+            <input type="number" id="inputDimW" value="277" onchange="applyDimensions()"
+              style="width:70px; background:var(--surface); border:1px solid #334155; color:#fff; padding:4px; border-radius:3px;">
+          </div>
+          <div style="display:flex; flex-direction:column;">
+            <div style="font-size:0.7rem; color:var(--text2); margin-bottom:4px;">Room Height (cm)</div>
+            <input type="number" id="inputDimH" value="250" onchange="applyDimensions()"
+              style="width:70px; background:var(--surface); border:1px solid #334155; color:#fff; padding:4px; border-radius:3px;">
+          </div>
+          <div style="width:1px; background:rgba(255,255,255,0.1); margin:0 5px;"></div>
+          <div style="display:flex; flex-direction:column;">
+            <div style="font-size:0.7rem; color:var(--text2); margin-bottom:4px;">Desk Width (cm)</div>
+            <input type="number" id="inputDeskW" value="160" onchange="applyDimensions()"
+              style="width:70px; background:var(--surface); border:1px solid #334155; color:#fff; padding:4px; border-radius:3px;">
+          </div>
+          <div style="display:flex; flex-direction:column;">
+            <div style="font-size:0.7rem; color:var(--text2); margin-bottom:4px;">Desk Depth (cm)</div>
+            <input type="number" id="inputDeskD" value="70" onchange="applyDimensions()"
+              style="width:70px; background:var(--surface); border:1px solid #334155; color:#fff; padding:4px; border-radius:3px;">
+          </div>
+        </div>
+        <div class="canvas-wrap" style="position:relative; display:flex; align-items:flex-start; gap:14px;">
+          <div style="display:flex; flex-direction:column; align-items:flex-start;">
+            <div class="canvas-label" style="margin-bottom:4px;">Top-down view &middot; Drag 🎧 listening pos &middot;
+              Drag speaker spread arrows
+            </div>
+            <canvas id="roomCanvas"></canvas>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:flex-start; padding-top:18px;">
+            <canvas id="frontCanvas" style="border-radius:6px; border:1px solid rgba(255,255,255,.1);"></canvas>
+          </div>
+          <div class="tooltip" id="tooltip"></div>
+        </div>
+        <div class="canvas-wrap">
+          <div class="canvas-label">Modal frequency response @ listening position · solid = active treatment state ·
+            click to set heatmap frequency</div>
+          <canvas id="frCanvas" height="180"></canvas>
+        </div>
+        <div class="legend">
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--speaker-color)"></div>Speakers (ADAM A7V)
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--listening-color)"></div>Listening position
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--desk-color)"></div>Desk
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:rgba(0,212,255,.4)"></div>Absorber panels
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:rgba(124,58,237,.5)"></div>Bass traps
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:rgba(16,185,129,.3)"></div>Ceiling cloud
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:rgba(239,68,68,.3)"></div>Diffuser
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn active" id="btnTreated" onclick="setTreatment(true)">✅ With Treatment</button>
+          <button class="btn" id="btnUntreated" onclick="setTreatment(false)">❌ No Treatment</button>
+          <button class="btn" onclick="showHeatmap=!showHeatmap;drawRoom()">🌡 Toggle Heatmap</button>
+          <button class="btn" onclick="showReflections=!showReflections;drawRoom()">↗ Toggle Reflections</button>
+          <button class="btn" onclick="resetPositions()">↺ Reset Positions</button>
+        </div>
+      </div>
+
+      <!-- TAB: WAVES -->
+      <div id="tab-waves" class="tab-content">
+        <div class="card">
+          <h3><span class="icon">⚡</span>Standing Wave Calculator</h3>
+          <div class="info-box">Room modes are resonant frequencies where sound builds up or cancels. Your narrow
+            <strong>2.77 m width</strong> is the most problematic dimension — it creates audible comb filtering at the
+            listening position.
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-label">Frequency</span>
+            <input type="range" id="freqSlider" min="20" max="400" value="58" oninput="updateWaveViz()">
+            <span class="ctrl-val" id="freqVal">58 Hz</span>
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-label">Dimension</span>
+            <div class="btn-row" style="margin:0">
+              <button class="btn active" id="btnL" onclick="setDim('L')">Length 5.3m</button>
+              <button class="btn" id="btnW" onclick="setDim('W')">Width 2.77m</button>
+              <button class="btn" id="btnH" onclick="setDim('H')">Height 2.5m</button>
+            </div>
+          </div>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="waveCanvas" height="180"></canvas>
+        </div>
+        <div class="card">
+          <h3><span class="icon">⚠️</span>Problematic Room Modes</h3>
+          <div class="section-title">Click a frequency to visualize</div>
+          <div class="freq-list" id="freqList"></div>
+          <table>
+            <thead>
+              <tr>
+                <th>Mode</th>
+                <th>Freq (Hz)</th>
+                <th>Dimension</th>
+                <th>Severity</th>
+                <th>Fix</th>
+              </tr>
+            </thead>
+            <tbody id="modeTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB: TREATMENT -->
+      <div id="tab-treatment" class="tab-content">
+        <div class="card">
+          <h3><span class="icon">📍</span>Speaker Placement – ADAM A7V</h3>
+          <div class="stat-row"><span class="stat-label">Distance from front wall</span><span
+              class="stat-val good">95–110 cm</span></div>
+          <div class="stat-row"><span class="stat-label">Distance from side walls</span><span class="stat-val good">≥ 72
+              cm (= room center ±)</span></div>
+          <div class="stat-val" style="font-size:.78rem;color:var(--text2);padding:8px 0;display:block">With 2.77m
+            width:
+            speakers centered → each 138.5cm from side walls; ideal spacing ~138.5 cm edge-to-edge tweeter.</div>
+          <div class="stat-row"><span class="stat-label">Speaker spacing (tweeter-tweeter)</span><span
+              class="stat-val good">~119 cm</span></div>
+          <div class="stat-row"><span class="stat-label">Listening distance</span><span class="stat-val good">224 cm
+              from front wall (38% rule)</span></div>
+          <div class="stat-row"><span class="stat-label">Listening triangle</span><span
+              class="stat-val good">Equilateral – ~119 cm sides</span></div>
+          <div class="stat-row"><span class="stat-label">Toe-in angle</span><span class="stat-val good">~15–20° (A7V
+              sweet spot narrow)</span></div>
+          <div class="stat-row"><span class="stat-label">Tweeter height</span><span class="stat-val good">~110–115 cm
+              (ear height seated)</span></div>
+        </div>
+        <div class="card">
+          <h3><span class="icon">🧱</span>Treatment Priority Order</h3>
+          <div class="priority-item">
+            <div class="priority-num">1</div>
+            <div class="priority-text"><strong>Corner Bass Traps (all 4 floor-ceiling corners)</strong>Biggest LF
+              improvement. 20cm thick Rockwool superchunk or floor-to-ceiling tube traps. Addresses axial modes in 2.77m
+              width (62Hz).</div>
+          </div>
+          <div class="priority-item">
+            <div class="priority-num">2</div>
+            <div class="priority-text"><strong>Side Wall First Reflection Points</strong>Controls early reflections,
+              dramatically improves stereo imaging. 10cm panels at ear-height mirror points.</div>
+          </div>
+          <div class="priority-item">
+            <div class="priority-num">3</div>
+            <div class="priority-text"><strong>Ceiling Cloud above Desk</strong>Eliminates ceiling flutter echo and comb
+              filtering at the mix position. 10cm panel, 5–10cm air gap.</div>
+          </div>
+          <div class="priority-item">
+            <div class="priority-num">4</div>
+            <div class="priority-text"><strong>Front Wall (behind speakers)</strong>Controls low-mid buildup. 10–15cm
+              broadband panel spanning full width.</div>
+          </div>
+          <div class="priority-item">
+            <div class="priority-num">5</div>
+            <div class="priority-text"><strong>Back Wall – Lower half absorber + upper diffuser</strong>Break up flutter
+              echo, return energy to room without LF buildup.</div>
+          </div>
+          <div class="priority-item">
+            <div class="priority-num">6</div>
+            <div class="priority-text"><strong>Rear corner soffit traps</strong>Tighten low-end further, address 29Hz
+              fundamental of 5.9m length mode.</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3><span class="icon">🎯</span>First Reflection Points</h3>
+          <div class="stat-row"><span class="stat-label">Left side wall (from front)</span><span class="stat-val"
+              id="live-refl-l">~162 cm</span></div>
+          <div class="stat-row"><span class="stat-label">Right side wall (from front)</span><span class="stat-val"
+              id="live-refl-r">~162 cm</span></div>
+          <div class="stat-row"><span class="stat-label">Ceiling mid-point</span><span class="stat-val"
+              id="live-refl-c">~162 cm from front</span></div>
+          <div class="stat-row"><span class="stat-label">Panel size (side walls)</span><span class="stat-val">60×120 cm
+              each</span></div>
+          <div class="stat-row"><span class="stat-label">Panel size (ceiling cloud)</span><span class="stat-val">100×120
+              cm</span></div>
+        </div>
+        <div class="card">
+          <h3><span class="icon">📊</span>Panel Count Summary</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Location</th>
+                <th>Type</th>
+                <th>Size</th>
+                <th>Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Front wall</td>
+                <td>Broadband absorber</td>
+                <td>120×60 cm</td>
+                <td>3</td>
+              </tr>
+              <tr>
+                <td>Side walls (FR points)</td>
+                <td>Absorber</td>
+                <td>60×120 cm</td>
+                <td>2 (×2 sides)</td>
+              </tr>
+              <tr>
+                <td>Side walls (mid)</td>
+                <td>Absorber</td>
+                <td>60×100 cm</td>
+                <td>1 (×2 sides)</td>
+              </tr>
+              <tr>
+                <td>Ceiling cloud</td>
+                <td>Absorber</td>
+                <td>100×120 cm</td>
+                <td>1</td>
+              </tr>
+              <tr>
+                <td>Back wall (lower)</td>
+                <td>Absorber</td>
+                <td>120×60 cm</td>
+                <td>2</td>
+              </tr>
+              <tr>
+                <td>Back wall (upper)</td>
+                <td>Diffuser 1D</td>
+                <td>60×60 cm</td>
+                <td>4</td>
+              </tr>
+              <tr>
+                <td>Front 4 corners</td>
+                <td>Bass trap (floor→ceil)</td>
+                <td>20cm thick</td>
+                <td>4</td>
+              </tr>
+              <tr>
+                <td>Rear 4 corners</td>
+                <td>Soffit / superchunk</td>
+                <td>30cm</td>
+                <td>4</td>
+              </tr>
+              <tr>
+                <td colspan="3"><strong>Total absorber panels</strong></td>
+                <td><strong>~14</strong></td>
+              </tr>
+              <tr>
+                <td colspan="3"><strong>Total bass traps / soffits</strong></td>
+                <td><strong>8 corners</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB: SPECS -->
+      <div id="tab-specs" class="tab-content">
+        <div class="card">
+          <h3><span class="icon">🧰</span>Absorber Panel Specs</h3>
+          <div class="stat-row"><span class="stat-label">Material (primary)</span><span class="stat-val good">Rockwool
+              RWA45 or Rockwool Safe'n'Sound</span></div>
+          <div class="stat-row"><span class="stat-label">Alternative</span><span class="stat-val">Knauf Earthwool / OC
+              703 rigid</span></div>
+          <div class="stat-row"><span class="stat-label">Standard thickness</span><span class="stat-val good">10 cm (for
+              200 Hz+)</span></div>
+          <div class="stat-row"><span class="stat-label">LF panels (front/back walls)</span><span
+              class="stat-val warn">15 cm (better down to 125 Hz)</span></div>
+          <div class="stat-row"><span class="stat-label">Air gap (strongly recommended)</span><span
+              class="stat-val good">5–10 cm – lowers effective absorption to ~80 Hz</span></div>
+          <div class="stat-row"><span class="stat-label">Density</span><span class="stat-val good">45–60 kg/m³ for
+              broadband</span></div>
+          <div class="stat-row"><span class="stat-label">Fabric cover</span><span class="stat-val">Guilford of Maine or
+              similar acoustically transparent</span></div>
+          <div class="stat-row"><span class="stat-label">Frame</span><span class="stat-val">45×45mm timber, 5cm gap
+              spacers</span></div>
+        </div>
+        <div class="card">
+          <h3><span class="icon">🔊</span>Bass Trap Specs</h3>
+          <div class="stat-row"><span class="stat-label">Type (corners)</span><span class="stat-val good">Superchunk –
+              stacked triangular rockwool</span></div>
+          <div class="stat-row"><span class="stat-label">Corner depth</span><span class="stat-val good">20–30 cm each
+              face (= 30cm triangle)</span></div>
+          <div class="stat-row"><span class="stat-label">Height</span><span class="stat-val good">Floor to ceiling (250
+              cm) – no gaps</span></div>
+          <div class="stat-row"><span class="stat-label">Material</span><span class="stat-val">Rockwool RWA45, 60–80
+              kg/m³</span></div>
+          <div class="stat-row"><span class="stat-label">Front corners priority</span><span
+              class="stat-val warn">Highest – speaker-corner coupling zone</span></div>
+          <div class="stat-row"><span class="stat-label">Rear corners</span><span class="stat-val">Soffit traps or
+              superchunk</span></div>
+          <div class="stat-row"><span class="stat-label">Frequency target</span><span class="stat-val good">40–200
+              Hz</span></div>
+        </div>
+        <div class="card">
+          <h3><span class="icon">🎛️</span>ADAM A7V Specific Tips</h3>
+          <div class="info-box">
+            <strong>Boundary EQ:</strong> The A7V has built-in HF and LF shelving trims. With ≥95cm from front wall, set
+            the low-shelf trim to 0 or −2dB. If closer, use −4dB to tame bass buildup.<br><br>
+            <strong>Tweeter dispersion:</strong> The A7V uses a ribbon-like ART tweeter with very wide horizontal
+            dispersion — first reflections off side walls are <em>very</em> audible in a 2.9m wide room. Side-wall
+            panels are non-negotiable.<br><br>
+            <strong>Port output direction:</strong> A7V is front-ported — less sensitive to rear-wall distance than
+            rear-ported monitors. Still keep ≥95cm from front wall for axial mode reasons.<br><br>
+            <strong>SPL sweet spot:</strong> 85–90 dB at listening position. Avoid pushing above 95 dB reference in a
+            room this small — modal resonance becomes much worse.<br><br>
+            <strong>Narrow room caveat:</strong> 2.9m width produces an axial mode at 58 Hz (half wavelength).
+            <em>Every</em> mix decision in the 50–80 Hz range will be unreliable without corner bass trapping. This is
+            #1 priority.
+          </div>
+        </div>
+        <div class="card">
+          <h3><span class="icon">💰</span>Estimated Materials Cost (DIY)</h3>
+          <div class="stat-row"><span class="stat-label">Rockwool (bass traps + panels)</span><span
+              class="stat-val">€200–350</span></div>
+          <div class="stat-row"><span class="stat-label">Timber frames</span><span class="stat-val">€80–120</span></div>
+          <div class="stat-row"><span class="stat-label">Acoustic fabric</span><span class="stat-val">€60–100</span>
+          </div>
+          <div class="stat-row"><span class="stat-label">Mounting hardware</span><span class="stat-val">€30–50</span>
+          </div>
+          <div class="stat-row"><span class="stat-label">Diffuser panels (QRD/1D)</span><span class="stat-val">€80–150
+              (or DIY)</span></div>
+          <div class="stat-row"><span class="stat-label"><strong>Total estimated</strong></span><span
+              class="stat-val good"><strong>€450–770</strong></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="card">
+        <h3><span class="icon">📐</span>Room Dimensions</h3>
+        <div class="stat-row"><span class="stat-label">Length</span><span class="stat-val mono" id="live-dim-L">530
+            cm</span></div>
+        <div class="stat-row"><span class="stat-label">Width</span><span class="stat-val mono warn" id="live-dim-W">277
+            cm ⚠</span></div>
+        <div class="stat-row"><span class="stat-label">Height</span><span class="stat-val mono" id="live-dim-H">250
+            cm</span></div>
+        <div class="stat-row"><span class="stat-label">Volume</span><span class="stat-val mono" id="live-dim-vol">36.7
+            m³</span></div>
+        <div class="stat-row"><span class="stat-label">Aspect ratio L:W</span><span class="stat-val mono warn"
+            id="live-dim-ratio">1.91:1</span></div>
+        <div class="stat-row"><span class="stat-label">Schroeder freq</span><span class="stat-val mono"
+            id="live-dim-schroeder">~180 Hz</span></div>
+      </div>
+      <div class="card">
+        <h3><span class="icon">🔊</span>Key Placements <span
+            style="font-size:.68rem;color:var(--text2);font-weight:400">(drag to update)</span></h3>
+        <div class="stat-row"><span class="stat-label">Front wall → speakers</span><span class="stat-val mono good"
+            id="live-spkwall">100 cm</span></div>
+        <div class="stat-row"><span class="stat-label">Speakers from center</span><span class="stat-val mono good"
+            id="live-spkoffset">±59.5 cm</span></div>
+        <div class="stat-row"><span class="stat-label">Speaker spacing</span><span class="stat-val mono good"
+            id="live-spkspacing">119 cm</span></div>
+        <div class="stat-row"><span class="stat-label">Listening position</span><span class="stat-val mono good"
+            id="live-listenpos">224 cm</span></div>
+        <div class="stat-row"><span class="stat-label">38% rule target</span><span class="stat-val mono"
+            id="live-38pct">224 cm</span></div>
+        <div class="stat-row"><span class="stat-label">Listening → back wall</span><span class="stat-val mono"
+            id="live-backwall">366 cm</span></div>
+        <div class="stat-row"><span class="stat-label">Listening triangle</span><span class="stat-val mono"
+            id="live-triangle">~119 cm</span></div>
+        <div class="stat-row"><span class="stat-label">Toe-in angle</span><span class="stat-val mono"
+            id="live-toein">~18°</span></div>
+        <div class="stat-row" id="live-38warn" style="display:none"><span class="stat-label" style="color:var(--warn)">⚠
+            Deviation from 38%</span><span class="stat-val warn" id="live-38dev"></span></div>
+      </div>
+      <div class="card">
+        <h3><span class="icon">🌊</span>Axial Mode Summary <span
+            style="font-size:.68rem;color:var(--text2);font-weight:400">(live, at listener)</span></h3>
+        <div id="axialSummary"></div>
+      </div>
+      <div class="card">
+        <h3><span class="icon">💡</span>Quick Wins</h3>
+        <div class="priority-item">
+          <div class="priority-num" style="background:var(--danger)">!</div>
+          <div class="priority-text"><strong>Width = 2.9m → 58 Hz mode</strong>Your listening position at 38% (224cm)
+            sits near an antinode. Bass traps are mandatory.</div>
+        </div>
+        <div class="priority-item">
+          <div class="priority-num" style="background:var(--warn)">2</div>
+          <div class="priority-text"><strong>ADAM ART tweeter</strong>Very wide dispersion = reflections audible to ~10
+            kHz. Side panels critical.</div>
+        </div>
+        <div class="priority-item">
+          <div class="priority-num" style="background:var(--accent3)">3</div>
+          <div class="priority-text"><strong>Use A7V built-in EQ</strong>−2dB LF shelf, 0 HF. Reduces buildup from rear
+            boundary.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== STATE & CONSTANTS =====
+    let L = 530; // Length = 530cm
+    let W = 277; // Width = 277cm
+    let H = 250; // Height = 250cm
+    const SPEED = 34300; // cm/s
+    const PAD = 40;
+    let SCALE = 1.0;
+
+    let DESK_W = 160;
+    let DESK_D = 70;
+
+    // Mutate dimensions from UI
+    function applyDimensions() {
+      L = Math.max(200, parseInt(document.getElementById('inputDimL').value) || 530);
+      W = Math.max(150, parseInt(document.getElementById('inputDimW').value) || 277);
+      H = Math.max(200, parseInt(document.getElementById('inputDimH').value) || 250);
+      DESK_W = Math.max(50, parseInt(document.getElementById('inputDeskW').value) || 160);
+      DESK_D = Math.max(30, parseInt(document.getElementById('inputDeskD').value) || 70);
+
+      // Keep speakers and listener within bounds if room shrinks
+      listenPos = Math.min(listenPos, L - 30);
+      spkWall = Math.min(spkWall, listenPos - 30);
+      spkOffset = Math.min(spkOffset, W / 2 - 20);
+      document.getElementById('spkWidthSlider').value = spkOffset * 2;
+      document.getElementById('spkWidthVal').textContent = (spkOffset * 2) + ' cm';
+
+      saveSettings();
+
+      // Keep the wave-tab dimension buttons in sync with the real room
+      document.getElementById('btnL').textContent = 'Length ' + parseFloat((L / 100).toFixed(2)) + 'm';
+      document.getElementById('btnW').textContent = 'Width ' + parseFloat((W / 100).toFixed(2)) + 'm';
+      document.getElementById('btnH').textContent = 'Height ' + parseFloat((H / 100).toFixed(2)) + 'm';
+
+      updateScale();
+      drawRoom();
+      drawFrontView();
+      buildModeTable();
+      updateWaveViz();
+      updateSidebar();
+      computeFR();
+      drawFR();
+    }
+
+    function saveSettings() {
+      const state = { L, W, H, DESK_W, DESK_D, listenPos, spkWall, spkOffset };
+      localStorage.setItem('acoustic_sim_settings', JSON.stringify(state));
+    }
+
+    function loadSettings() {
+      try {
+        const saved = localStorage.getItem('acoustic_sim_settings');
+        if (saved) {
+          const state = JSON.parse(saved);
+          if (state.L) L = state.L;
+          if (state.W) W = state.W;
+          if (state.H) H = state.H;
+          if (state.DESK_W) DESK_W = state.DESK_W;
+          if (state.DESK_D) DESK_D = state.DESK_D;
+          if (state.listenPos) listenPos = state.listenPos;
+          if (state.spkWall) spkWall = state.spkWall;
+          if (state.spkOffset) spkOffset = state.spkOffset;
+
+          document.getElementById('inputDimL').value = L;
+          document.getElementById('inputDimW').value = W;
+          document.getElementById('inputDimH').value = H;
+          document.getElementById('inputDeskW').value = DESK_W;
+          document.getElementById('inputDeskD').value = DESK_D;
+          document.getElementById('spkWidthSlider').value = spkOffset * 2;
+          document.getElementById('spkWidthVal').textContent = (spkOffset * 2) + ' cm';
+        }
+      } catch (e) {
+        console.error("Could not load settings", e);
+      }
+    }
+
+    // Mutable positions (drag to change)
+    let listenPos = 201;   // cm from front wall
+    let spkWall = 100;     // cm from front wall
+    let spkOffset = 59.5;  // cm from center to each speaker
+
+    let showTreatment = true, showHeatmap = true, showReflections = true;
+    let currentDim = 'W', selectedFreq = 58;
+
+    // ===== DRAG STATE =====
+    let drag = null; // null | 'listen' | 'spkwall' | 'spkspread'
+
+    function resetPositions() {
+      listenPos = Math.round(L * 0.38); spkWall = 100; spkOffset = 59.5;
+      document.getElementById('spkWidthSlider').value = 119;
+      document.getElementById('spkWidthVal').textContent = '119 cm';
+      saveSettings();
+      drawRoom(); drawFrontView(); updateSidebar(); computeFR(); drawFR();
+    }
+
+    // rAF-throttled full redraw for drag interactions (heatmap + FR are live)
+    let rafPending = false;
+    function scheduleRedraw() {
+      if (rafPending) return;
+      rafPending = true;
+      requestAnimationFrame(() => {
+        rafPending = false;
+        drawRoom(); drawFrontView(); updateSidebar(); computeFR(); drawFR();
+      });
+    }
+
+    function updateSidebar() {
+      // Dimensions
+      const vol = (L * W * H) / 1000000;
+      const ratio = (L / W).toFixed(2);
+      const rt60 = 0.4; // assumed
+      const schroeder = Math.round(2000 * Math.sqrt(rt60 / vol));
+
+      document.getElementById('live-dim-L').textContent = L + ' cm';
+      document.getElementById('live-dim-W').textContent = W + ' cm';
+      document.getElementById('live-dim-W').className = (ratio > 1.8 || ratio < 1.2) ? 'stat-val mono warn' : 'stat-val mono';
+      document.getElementById('live-dim-H').textContent = H + ' cm';
+      document.getElementById('live-dim-vol').textContent = vol.toFixed(1) + ' m³';
+      document.getElementById('live-dim-ratio').textContent = ratio + ':1';
+      document.getElementById('live-dim-ratio').className = (ratio > 1.8) ? 'stat-val mono warn' : 'stat-val mono';
+      document.getElementById('live-dim-schroeder').textContent = '~' + schroeder + ' Hz';
+
+      const target38 = Math.round(L * 0.38);
+      const triSide = Math.round(Math.sqrt(Math.pow(spkOffset * 2, 2) + Math.pow(listenPos - spkWall, 2)));
+      const toein = Math.round(Math.atan2(W / 2 - spkOffset, listenPos - spkWall) * 180 / Math.PI);
+      const dev = listenPos - target38;
+      document.getElementById('live-spkwall').textContent = Math.round(spkWall) + ' cm';
+      document.getElementById('live-spkoffset').textContent = '±' + spkOffset.toFixed(1) + ' cm';
+      document.getElementById('live-spkspacing').textContent = Math.round(spkOffset * 2) + ' cm';
+      document.getElementById('live-listenpos').textContent = Math.round(listenPos) + ' cm';
+      document.getElementById('live-38pct').textContent = target38 + ' cm';
+      document.getElementById('live-backwall').textContent = Math.round(L - listenPos) + ' cm';
+      document.getElementById('live-triangle').textContent = '~' + triSide + ' cm';
+      document.getElementById('live-toein').textContent = '~' + toein + '°';
+      const warnEl = document.getElementById('live-38warn');
+      if (Math.abs(dev) > 15) {
+        warnEl.style.display = '';
+        document.getElementById('live-38dev').textContent = (dev > 0 ? '+' : '') + Math.round(dev) + ' cm';
+      } else { warnEl.style.display = 'none'; }
+      // Colour listening pos value
+      const lv = document.getElementById('live-listenpos');
+      lv.className = 'stat-val mono ' + (Math.abs(dev) <= 15 ? 'good' : Math.abs(dev) <= 35 ? 'warn' : 'bad');
+
+      // Update First Reflection Points from the Treatment Tab
+      const spkY = spkWall;
+      const lSx = W / 2 - spkOffset;
+      const rfY = spkY + (listenPos - spkY) * lSx / (lSx + W / 2);
+      const ceilY = spkWall + (listenPos - spkWall) / 2;
+
+      const lblL = document.getElementById('live-refl-l');
+      if (lblL) {
+        lblL.textContent = '~' + Math.round(rfY) + ' cm';
+        document.getElementById('live-refl-r').textContent = '~' + Math.round(rfY) + ' cm';
+        document.getElementById('live-refl-c').textContent = '~' + Math.round(ceilY) + ' cm from front';
+      }
+    }
+
+    // ===== DRAG HELPERS =====
+    function canvasRoomPos(evt, canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const dpr = window.devicePixelRatio || 1;
+      const cx = ((evt.clientX ?? evt.touches[0].clientX) - rect.left) * scaleX / dpr;
+      const cy = ((evt.clientY ?? evt.touches[0].clientY) - rect.top) * scaleY / dpr;
+      return { rx: (cx - PAD) / SCALE, ry: (cy - PAD) / SCALE };
+    }
+
+    function hitTest(rx, ry) {
+      const lySpk = W / 2 - spkOffset, rySpk = W / 2 + spkOffset;
+      if (Math.abs(rx - spkWall) < 24 && (Math.abs(ry - lySpk) < 16 || Math.abs(ry - rySpk) < 16)) return 'spkspread';
+      if (Math.abs(rx - listenPos) < 20 && Math.abs(ry - W / 2) < 20) return 'listen';
+      if (Math.abs(rx - spkWall) < 20 && Math.abs(ry - W / 2) < spkOffset + 30) return 'spkwall';
+      return null;
+    }
+
+    function initDrag() {
+      const canvas = document.getElementById('roomCanvas');
+      function onDown(e) {
+        const { rx, ry } = canvasRoomPos(e, canvas);
+        drag = hitTest(rx, ry);
+        if (drag) { e.preventDefault(); canvas.style.cursor = 'grabbing'; }
+      }
+      function onMove(e) {
+        if (!drag) {
+          const { rx, ry } = canvasRoomPos(e, canvas);
+          canvas.style.cursor = hitTest(rx, ry) ? 'grab' : 'default';
+          return;
+        }
+        e.preventDefault();
+        const { rx, ry } = canvasRoomPos(e, canvas);
+        if (drag === 'listen') {
+          listenPos = Math.max(spkWall + 30, Math.min(L - 30, rx));
+        } else if (drag === 'spkwall') {
+          spkWall = Math.max(30, Math.min(listenPos - 30, rx));
+        } else if (drag === 'spkspread') {
+          spkOffset = Math.max(20, Math.min(W / 2 - 15, Math.abs(ry - W / 2)));
+          document.getElementById('spkWidthSlider').value = Math.round(spkOffset * 2);
+          document.getElementById('spkWidthVal').textContent = Math.round(spkOffset * 2) + ' cm';
+        }
+        saveSettings();
+        scheduleRedraw();
+      }
+      function onUp() { drag = null; canvas.style.cursor = 'default'; }
+      canvas.addEventListener('mousedown', onDown);
+      canvas.addEventListener('mousemove', onMove);
+      canvas.addEventListener('mouseup', onUp);
+      canvas.addEventListener('touchstart', onDown, { passive: false });
+      canvas.addEventListener('touchmove', onMove, { passive: false });
+      canvas.addEventListener('touchend', onUp);
+    }
+
+    // Room mode calculation
+    function roomModes() {
+      const dims = [{ name: 'Length', val: L, sym: 'L' }, { name: 'Width', val: W, sym: 'W' }, { name: 'Height', val: H, sym: 'H' }];
+      const modes = [];
+      dims.forEach(d => {
+        for (let n = 1; n <= 4; n++) {
+          const f = Math.round((n * SPEED) / (2 * d.val));
+          let sev = 'low', sevClass = 'severity-low';
+          if (d.sym === 'W' && n === 1) { sev = 'CRITICAL'; sevClass = 'severity-high'; }
+          else if (d.sym === 'H' && n === 1) { sev = 'High'; sevClass = 'severity-med'; }
+          else if (d.sym === 'L' && n === 1) { sev = 'Moderate'; sevClass = 'severity-low'; }
+          else if (f < 150 && n <= 2) { sev = 'Moderate'; sevClass = 'severity-med'; }
+          modes.push({ dim: d.sym, name: d.name, n, f, sev, sevClass });
+        }
+      });
+      modes.sort((a, b) => a.f - b.f);
+      return modes;
+    }
+
+    function buildModeTable() {
+      const modes = roomModes().filter(m => m.f <= 400);
+      const fl = document.getElementById('freqList');
+      const tb = document.getElementById('modeTable');
+      fl.innerHTML = ''; tb.innerHTML = '';
+      modes.forEach(m => {
+        const chip = document.createElement('div');
+        chip.className = 'freq-chip' + (m.sev === 'CRITICAL' ? ' problem' : m.sev === 'High' ? ' warn' : '') + (m.f === selectedFreq ? ' active' : '');
+        chip.textContent = m.f + 'Hz';
+        chip.onclick = () => { selectedFreq = m.f; setDim(m.dim); document.getElementById('freqSlider').value = m.f; document.getElementById('freqVal').textContent = m.f + ' Hz'; updateWaveViz(); buildModeTable(); };
+        fl.appendChild(chip);
+        const tr = document.createElement('tr');
+        const fix = m.dim === 'W' ? 'Bass traps corners' : m.dim === 'H' ? 'Ceiling cloud' : 'Front/back absorbers';
+        tr.innerHTML = `<td>${m.dim}${m.n}</td><td class="mono">${m.f}</td><td>${m.name}</td><td class="${m.sevClass}">${m.sev}</td><td style="color:var(--text2);font-size:.72rem">${fix}</td>`;
+        tb.appendChild(tr);
+      });
+    }
+
+    // ===== ROOM DRAWING =====
+    function drawRoom() {
+      const canvas = document.getElementById('roomCanvas');
+      const pad = PAD;
+      const cw = Math.round(L * SCALE + pad * 2);
+      const ch = Math.round(W * SCALE + pad * 2);
+
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = cw * dpr;
+      canvas.height = ch * dpr;
+      canvas.style.width = `${cw}px`;
+      canvas.style.height = `${ch}px`;
+
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      if (showHeatmap) drawHeatmap(ctx, pad);
+      else { ctx.fillStyle = '#1a2233'; ctx.fillRect(0, 0, cw, ch); }
+
+      const cx = (x) => pad + x * SCALE;
+      const cy = (y) => pad + y * SCALE;
+
+      ctx.strokeStyle = 'rgba(255,255,255,.04)'; ctx.lineWidth = 1;
+      for (let x = 0; x <= L; x += 50) { ctx.beginPath(); ctx.moveTo(cx(x), cy(0)); ctx.lineTo(cx(x), cy(W)); ctx.stroke(); }
+      for (let y = 0; y <= W; y += 50) { ctx.beginPath(); ctx.moveTo(cx(0), cy(y)); ctx.lineTo(cx(L), cy(y)); ctx.stroke(); }
+
+      ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = 2;
+      ctx.strokeRect(cx(0), cy(0), L * SCALE, W * SCALE);
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.font = '11px Inter'; ctx.textAlign = 'center';
+      ctx.translate(cx(0) - 12, cy(W / 2)); ctx.rotate(-Math.PI / 2);
+      ctx.fillText('FRONT WALL (speakers)', 0, 0); ctx.restore();
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.font = '11px Inter'; ctx.textAlign = 'center';
+      ctx.translate(cx(L) + 18, cy(W / 2)); ctx.rotate(-Math.PI / 2);
+      ctx.fillText('BACK WALL', 0, 0); ctx.restore();
+
+      ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.font = '11px Inter'; ctx.textAlign = 'center';
+      ctx.fillText(`${W} cm width`, cx(L / 2), cy(0) - 8);
+      ctx.fillText(`${L} cm length`, cx(L / 2), cy(W) + 18);
+
+      ctx.strokeStyle = 'rgba(255,255,255,.2)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(cx(0), cy(W / 2)); ctx.lineTo(cx(L), cy(W / 2)); ctx.stroke();
+      ctx.setLineDash([]);
+
+      if (showTreatment) drawTreatment(ctx, cx, cy);
+      if (showReflections && showTreatment) drawReflections(ctx, cx, cy);
+
+      const target38 = L * 0.38;
+      ctx.strokeStyle = 'rgba(16,185,129,.2)'; ctx.lineWidth = 1; ctx.setLineDash([2, 6]);
+      ctx.beginPath(); ctx.moveTo(cx(target38), cy(0)); ctx.lineTo(cx(target38), cy(W)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(16,185,129,.35)'; ctx.font = '8px Inter'; ctx.textAlign = 'left';
+      ctx.fillText('38% rule', cx(target38) + 2, cy(W) - 4);
+
+      const deskGap = 15;
+      const deskX = listenPos - deskGap - DESK_D;
+      ctx.fillStyle = 'rgba(75,85,99,.7)';
+      ctx.fillRect(cx(deskX), cy(W / 2 - DESK_W / 2), DESK_D * SCALE, DESK_W * SCALE);
+      ctx.strokeStyle = '#6b7280'; ctx.lineWidth = 1;
+      ctx.strokeRect(cx(deskX), cy(W / 2 - DESK_W / 2), DESK_D * SCALE, DESK_W * SCALE);
+      ctx.save();
+      ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font = '10px Inter'; ctx.textAlign = 'center';
+      ctx.translate(cx(deskX + DESK_D / 2), cy(W / 2)); ctx.rotate(-Math.PI / 2);
+      ctx.fillText('DESK', 0, 4); ctx.restore();
+
+      // ADAM A7V: 337mm H x 200mm W x 280mm D → scale: ~34H x 20W x 28D (in cm)
+      // In landscape view: speaker body extends in X direction (depth), width in Y
+      const spkBodyW = 20;  // cm – speaker baffle width (Y axis)
+      const spkBodyD = 28;  // cm – speaker depth (X axis)
+      const spkLy = W / 2 - spkOffset;  // Y position of left speaker
+      const spkRy = W / 2 + spkOffset;  // Y position of right speaker
+      // Membrane at front face: x = spkWall (front wall is at x=0)
+      // Speaker body extends from spkWall to spkWall+spkBodyD
+      const membraneX = spkWall;  // membrane is exactly at the speaker wall position
+      const angleRad = Math.atan2(spkOffset, listenPos - membraneX);
+
+      function drawSpeaker(sy, isLeft) {
+        ctx.save();
+        // Pivot at membrane (front face center of speaker)
+        ctx.translate(cx(membraneX), cy(sy));
+        ctx.rotate((isLeft ? 1 : -1) * angleRad);
+
+        // TOP VIEW: speaker is a flat rectangle
+        const bodyDepth = spkBodyD * SCALE;
+        const bodyWidth = spkBodyW * SCALE;
+
+        // Cabinet body extending backwards
+        ctx.fillStyle = 'rgba(22,22,32,.95)';
+        ctx.beginPath();
+        // Draw from 0 towards -1 * bodyDepth
+        ctx.roundRect(-bodyDepth, -bodyWidth / 2, bodyDepth, bodyWidth, 3);
+        ctx.fill();
+        ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 1.2; ctx.stroke();
+
+        // Front baffle face (highlighted strip on right edge = membrane side = towards listener)
+        ctx.fillStyle = 'rgba(245,158,11,.75)';
+        ctx.fillRect(-2.5, -bodyWidth / 2, 2.5, bodyWidth);
+
+        // Label
+        ctx.fillStyle = 'rgba(245,158,11,.85)'; ctx.font = 'bold 7px Inter'; ctx.textAlign = 'center';
+        // Label must be readable if rotated 90deg or 180deg
+        ctx.save();
+        ctx.translate(-bodyDepth / 2, 0);
+        if (isLeft) ctx.rotate(Math.PI);
+        ctx.fillText('A7V', 0, 3);
+        ctx.restore();
+
+        ctx.restore();
+      }
+
+      drawSpeaker(spkLy, true);
+      drawSpeaker(spkRy, false);
+
+      // Speaker spread annotation
+      ctx.fillStyle = 'rgba(245,158,11,.7)'; ctx.font = '9px JetBrains Mono'; ctx.textAlign = 'right';
+      ctx.fillText('↑' + Math.round(spkOffset * 2) + 'cm↓', cx(membraneX) - 6, cy(W / 2) + 3);
+      ctx.fillStyle = 'rgba(245,158,11,.35)'; ctx.font = '8px Inter';
+      ctx.fillText('drag ↕', cx(membraneX) - 6, cy(W / 2) + 14);
+
+      // Listening triangle lines – from the membrane center (front of each speaker)
+      const lx = cx(listenPos), ly = cy(W / 2);
+      // Membrane is at (membraneX, spkLy/spkRy)
+      const slx = cx(membraneX), sly = cy(spkLy);
+      const srx = cx(membraneX), sry = cy(spkRy);
+
+      ctx.strokeStyle = 'rgba(16,185,129,.5)'; ctx.lineWidth = 1; ctx.setLineDash([5, 5]);
+      ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(slx, sly); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(srx, sry); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(slx, sly); ctx.lineTo(srx, sry); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Angle arc at listener
+      ctx.beginPath();
+      ctx.arc(lx, ly, 25 * SCALE, Math.PI - angleRad, Math.PI + angleRad);
+      ctx.strokeStyle = 'rgba(16,185,129,.8)'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.fillStyle = 'rgba(16,185,129,.9)'; ctx.font = '9px Inter'; ctx.textAlign = 'left';
+      ctx.fillText(`${(angleRad * 2 * 180 / Math.PI).toFixed(0)}°`, lx + 8, ly + 3);
+
+      // Listening position dot
+      ctx.fillStyle = 'rgba(16,185,129,.9)';
+      ctx.beginPath(); ctx.arc(lx, ly, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#10b981'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(lx, ly, 12, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 10px Inter'; ctx.textAlign = 'center';
+      ctx.fillText('👂', lx, ly + 3);
+      ctx.fillStyle = 'rgba(16,185,129,.6)'; ctx.font = '8px Inter';
+      ctx.fillText('drag ↔', lx, ly + 22);
+
+      // Distance annotations along centre axis
+      ctx.strokeStyle = 'rgba(0,212,255,.4)'; ctx.lineWidth = 1; ctx.setLineDash([2, 4]);
+      ctx.beginPath(); ctx.moveTo(cx(0), cy(W / 2 - 2)); ctx.lineTo(cx(membraneX), cy(W / 2 - 2)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx(membraneX), cy(W / 2 - 2)); ctx.lineTo(cx(listenPos), cy(W / 2 - 2)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'var(--accent)'; ctx.font = '10px JetBrains Mono'; ctx.textAlign = 'center';
+      ctx.fillText(Math.round(spkWall) + 'cm', cx(spkWall / 2), cy(W / 2 - 6));
+      ctx.fillText(Math.round(listenPos - membraneX) + 'cm (' + (listenPos / L * 100).toFixed(0) + '%)', cx((membraneX + listenPos) / 2), cy(W / 2 - 6));
+    }
+
+    function drawTreatment(ctx, cx, cy) {
+      function panel(x, y, w, h, color, label, rotateLabel = false) {
+        ctx.fillStyle = color;
+        ctx.fillRect(cx(x), cy(y), w * SCALE, h * SCALE);
+        if (label) {
+          ctx.fillStyle = 'rgba(255,255,255,.7)';
+          ctx.font = '7px Inter'; ctx.textAlign = 'center';
+          if (rotateLabel) {
+            ctx.save();
+            ctx.translate(cx(x + w / 2), cy(y + h / 2));
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText(label, 0, 3);
+            ctx.restore();
+          } else {
+            ctx.fillText(label, cx(x + w / 2), cy(y + h / 2) + 3);
+          }
+        }
+      }
+      function cornerTrap(x, y, size, dir) {
+        ctx.fillStyle = 'rgba(124,58,237,.55)';
+        ctx.beginPath();
+        if (dir === 0) { ctx.moveTo(cx(x), cy(y)); ctx.lineTo(cx(x + size), cy(y)); ctx.lineTo(cx(x), cy(y + size)); }
+        if (dir === 1) { ctx.moveTo(cx(x), cy(y)); ctx.lineTo(cx(x), cy(y + size)); ctx.lineTo(cx(x - size), cy(y)); }
+        if (dir === 2) { ctx.moveTo(cx(x), cy(y)); ctx.lineTo(cx(x + size), cy(y)); ctx.lineTo(cx(x), cy(y - size)); }
+        if (dir === 3) { ctx.moveTo(cx(x), cy(y)); ctx.lineTo(cx(x), cy(y - size)); ctx.lineTo(cx(x - size), cy(y)); }
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = 'rgba(124,58,237,.8)'; ctx.lineWidth = 1; ctx.stroke();
+      }
+
+      cornerTrap(0, 0, 25, 0); // TL
+      cornerTrap(0, W, 25, 2); // BL
+      cornerTrap(L, 0, 25, 1); // TR
+      cornerTrap(L, W, 25, 3); // BR
+
+      const fwCenters = [W / 2 - 75, W / 2, W / 2 + 75];
+      fwCenters.forEach(y => panel(0, y - 27.5, 12, 55, 'rgba(0,212,255,.4)', ''));
+      ctx.save();
+      ctx.fillStyle = 'rgba(0,212,255,.7)'; ctx.font = '7px Inter'; ctx.textAlign = 'center';
+      ctx.translate(cx(16), cy(W / 2)); ctx.rotate(-Math.PI / 2);
+      ctx.fillText('FRONT ABSORBERS (3× 10cm)', 0, 0);
+      ctx.restore();
+
+      const spkX = spkWall;
+      const lSy = W / 2 - spkOffset;
+      const rfX = spkX + (listenPos - spkX) * lSy / (lSy + W / 2);
+
+      panel(rfX - 27.5, 0, 55, 10, 'rgba(0,212,255,.5)', '1st Refl');
+      panel(rfX - 27.5, W - 10, 55, 10, 'rgba(0,212,255,.5)', '1st Refl');
+
+      const secX = rfX + (L - rfX) / 3;
+      panel(secX - 22.5, 0, 45, 10, 'rgba(0,212,255,.35)', 'Flutter');
+      panel(secX - 22.5, W - 10, 45, 10, 'rgba(0,212,255,.35)', 'Flutter');
+
+      const ceilX = spkWall + (listenPos - spkWall) / 2;
+      panel(ceilX - 25, W / 2 - 55, 50, 110, 'rgba(16,185,129,.25)', 'CEILING CLOUD (ABOVE)', true);
+
+      panel(L - 12, W / 2 - 105, 12, 100, 'rgba(0,212,255,.4)', '');
+      panel(L - 12, W / 2 + 5, 12, 100, 'rgba(0,212,255,.4)', '');
+
+      panel(L - 22, 25, 10, 40, 'rgba(239,68,68,.35)', '', true);
+      panel(L - 22, 90, 10, 40, 'rgba(239,68,68,.35)', '', true);
+      panel(L - 22, W - 130, 10, 40, 'rgba(239,68,68,.35)', '', true);
+      panel(L - 22, W - 65, 10, 40, 'rgba(239,68,68,.35)', '', true);
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(239,68,68,.7)'; ctx.font = '7px Inter'; ctx.textAlign = 'center';
+      ctx.translate(cx(L - 26), cy(W / 2)); ctx.rotate(-Math.PI / 2);
+      ctx.fillText('DIFFUSERS', 0, 0);
+      ctx.restore();
+    }
+
+    function drawReflections(ctx, cx, cy) {
+      // Membrane is at the front face of the speaker (spkWall)
+      const memX = spkWall;  // membrane X coordinate
+      const lSy = W / 2 - spkOffset;
+      const rSy = W / 2 + spkOffset;
+      const listenY = W / 2;
+
+      // First reflection points on top/bottom walls using mirror image method
+      // Left speaker reflects off top wall (y=0)
+      const rfXt = memX + (listenPos - memX) * lSy / (lSy + listenY);
+      // Right speaker reflects off bottom wall (y=W)
+      const rfXb = memX + (listenPos - memX) * (W - rSy) / ((W - rSy) + (W - listenY));
+
+      ctx.strokeStyle = 'rgba(255,200,0,.5)'; ctx.lineWidth = 1.5; ctx.setLineDash([3, 6]);
+      ctx.beginPath(); ctx.moveTo(cx(memX), cy(lSy)); ctx.lineTo(cx(rfXt), cy(0)); ctx.lineTo(cx(listenPos), cy(listenY)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx(memX), cy(rSy)); ctx.lineTo(cx(rfXb), cy(W)); ctx.lineTo(cx(listenPos), cy(listenY)); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Direct speaker-to-listener distance
+      const triSide = Math.sqrt(Math.pow(spkOffset, 2) + Math.pow(listenPos - memX, 2));
+
+      // Distance label on left speaker line
+      ctx.save();
+      const angleL = Math.atan2(listenY - lSy, listenPos - memX);
+      const labelD = 0.38;
+      ctx.translate(cx(memX + (listenPos - memX) * labelD), cy(lSy + (listenY - lSy) * labelD));
+      ctx.rotate(angleL);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = 'rgba(0,0,0,0.65)'; ctx.fillRect(-18, -13, 36, 11);
+      ctx.fillStyle = 'rgba(16,185,129,1)'; ctx.font = '8px JetBrains Mono';
+      ctx.fillText(Math.round(triSide) + 'cm', 0, -4);
+      ctx.restore();
+
+      // Distance label on right speaker line
+      ctx.save();
+      const angleR = Math.atan2(listenY - rSy, listenPos - memX);
+      ctx.translate(cx(memX + (listenPos - memX) * labelD), cy(rSy + (listenY - rSy) * labelD));
+      ctx.rotate(angleR);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = 'rgba(0,0,0,0.65)'; ctx.fillRect(-18, 2, 36, 11);
+      ctx.fillStyle = 'rgba(16,185,129,1)'; ctx.font = '8px JetBrains Mono';
+      ctx.fillText(Math.round(triSide) + 'cm', 0, 10);
+      ctx.restore();
+    }
+
+    function getClosest3DMode(freq) {
+      let best = { nx: 0, ny: 0, nz: 0, f: 0, diff: Infinity };
+      for (let nx = 0; nx <= 6; nx++) {
+        for (let ny = 0; ny <= 4; ny++) {
+          for (let nz = 0; nz <= 4; nz++) {
+            if (nx === 0 && ny === 0 && nz === 0) continue;
+            // X is Length (L), Y is Width (W)
+            const f = (SPEED / 2) * Math.sqrt(Math.pow(nx / L, 2) + Math.pow(ny / W, 2) + Math.pow(nz / H, 2));
+            const diff = Math.abs(f - freq);
+            if (diff < best.diff) best = { nx, ny, nz, f, diff };
+          }
+        }
+      }
+      return best;
+    }
+
+    // ===== MODAL ACOUSTIC ENGINE =====
+    // Steady-state Green's-function modal expansion for a rectangular rigid-wall room:
+    //   p(r) = Σn εn ψn(r) ψn(r0) / (ωn² − ω² + 2jδnω),   ψn = cos(nxπx/L)·cos(nyπy/W)·cos(nzπz/H)
+    // driven coherently by BOTH speakers at their actual positions; δn from RT60,
+    // which depends on the treatment toggle. Moving a speaker changes ψn(r0) and
+    // therefore which modes get excited (e.g. symmetric speakers cannot excite
+    // odd-order width modes — that's real physics, not a bug).
+    const EAR_Z = 120;   // listening ear height (cm)
+    const SPK_Z = 120;   // acoustic centre height of the monitors (cm)
+
+    function rt60For(f, treated) {
+      // broadband small-room estimate: bare room vs full treatment plan
+      return treated
+        ? Math.max(0.22, 0.34 - f * 0.0003)
+        : Math.max(0.5, 0.95 - f * 0.001);
+    }
+
+    function speakerSources() {
+      return [
+        { x: spkWall, y: W / 2 - spkOffset },
+        { x: spkWall, y: W / 2 + spkOffset }
+      ];
+    }
+
+    const CMAP = [[10, 22, 46], [13, 84, 166], [0, 190, 190], [16, 185, 129], [245, 158, 11], [239, 68, 68]];
+    function cmapColor(t) {
+      t = Math.max(0, Math.min(1, t));
+      const s = t * (CMAP.length - 1);
+      const i = Math.min(CMAP.length - 2, Math.floor(s));
+      const f = s - i;
+      return [
+        Math.round(CMAP[i][0] + (CMAP[i + 1][0] - CMAP[i][0]) * f),
+        Math.round(CMAP[i][1] + (CMAP[i + 1][1] - CMAP[i][1]) * f),
+        Math.round(CMAP[i][2] + (CMAP[i + 1][2] - CMAP[i][2]) * f)
+      ];
+    }
+
+    function drawHeatmap(ctx, pad) {
+      const freq = selectedFreq;
+      const om = 2 * Math.PI * freq;
+      const fmax = Math.min(700, Math.max(freq * 1.6, freq + 140));
+      const step = 3; // cm grid, upscaled with bilinear smoothing
+      const NX = Math.floor(L / step) + 1;
+      const NY = Math.floor(W / step) + 1;
+      const nxMax = Math.floor(2 * L * fmax / SPEED);
+      const nyMax = Math.floor(2 * W * fmax / SPEED);
+      const nzMax = Math.floor(2 * H * fmax / SPEED);
+
+      // cos lookup tables over the grid
+      const cosX = [], cosY = [];
+      for (let n = 0; n <= nxMax; n++) {
+        const t = new Float32Array(NX);
+        for (let i = 0; i < NX; i++) t[i] = Math.cos(n * Math.PI * Math.min(i * step, L) / L);
+        cosX.push(t);
+      }
+      for (let n = 0; n <= nyMax; n++) {
+        const t = new Float32Array(NY);
+        for (let j = 0; j < NY; j++) t[j] = Math.cos(n * Math.PI * Math.min(j * step, W) / W);
+        cosY.push(t);
+      }
+
+      const srcs = speakerSources();
+      // complex coefficient per (nx,ny) pair with all z-modes folded in
+      const coefRe = new Float32Array((nxMax + 1) * (nyMax + 1));
+      const coefIm = new Float32Array((nxMax + 1) * (nyMax + 1));
+      let nModes = 0;
+      for (let nx = 0; nx <= nxMax; nx++) {
+        for (let ny = 0; ny <= nyMax; ny++) {
+          let cr = 0, ci = 0;
+          for (let nz = 0; nz <= nzMax; nz++) {
+            const fn = (SPEED / 2) * Math.sqrt((nx / L) ** 2 + (ny / W) ** 2 + (nz / H) ** 2);
+            if (fn > fmax) break; // fn grows monotonically with nz
+            const eps = (nx ? 2 : 1) * (ny ? 2 : 1) * (nz ? 2 : 1);
+            let srcSum = 0;
+            for (const s of srcs) srcSum += Math.cos(nx * Math.PI * s.x / L) * Math.cos(ny * Math.PI * s.y / W);
+            const num = eps * srcSum * Math.cos(nz * Math.PI * SPK_Z / H) * Math.cos(nz * Math.PI * EAR_Z / H);
+            if (Math.abs(num) < 1e-9) continue;
+            const on = 2 * Math.PI * fn;
+            const delta = 6.91 / rt60For(Math.max(fn, 20), showTreatment);
+            const dre = on * on - om * om, dim = 2 * delta * om;
+            const dmag = dre * dre + dim * dim;
+            cr += num * dre / dmag;
+            ci -= num * dim / dmag;
+            nModes++;
+          }
+          coefRe[nx * (nyMax + 1) + ny] = cr;
+          coefIm[nx * (nyMax + 1) + ny] = ci;
+        }
+      }
+
+      // accumulate the complex pressure field over the grid (separable cos products)
+      const fre = new Float32Array(NX * NY), fim = new Float32Array(NX * NY);
+      for (let nx = 0; nx <= nxMax; nx++) {
+        const tX = cosX[nx];
+        for (let ny = 0; ny <= nyMax; ny++) {
+          const cr = coefRe[nx * (nyMax + 1) + ny], ci = coefIm[nx * (nyMax + 1) + ny];
+          if (cr === 0 && ci === 0) continue;
+          const tY = cosY[ny];
+          for (let j = 0; j < NY; j++) {
+            const gy = tY[j], a = cr * gy, b = ci * gy, base = j * NX;
+            for (let i = 0; i < NX; i++) {
+              const g = tX[i];
+              fre[base + i] += a * g;
+              fim[base + i] += b * g;
+            }
+          }
+        }
+      }
+
+      // |p|² → dB
+      const db = new Float32Array(NX * NY);
+      let maxDb = -1e9, sumDb = 0;
+      for (let i = 0; i < NX * NY; i++) {
+        db[i] = 10 * Math.log10(fre[i] * fre[i] + fim[i] * fim[i] + 1e-24);
+        if (db[i] > maxDb) maxDb = db[i];
+        sumDb += db[i];
+      }
+      const avgDb = sumDb / (NX * NY);
+      const range = 42; // dB dynamic range of the colour scale
+
+      const off = document.createElement('canvas');
+      off.width = NX; off.height = NY;
+      const octx = off.getContext('2d');
+      const img = octx.createImageData(NX, NY);
+      for (let j = 0; j < NY; j++) {
+        for (let i = 0; i < NX; i++) {
+          const t = (db[j * NX + i] - (maxDb - range)) / range;
+          const c = cmapColor(t);
+          const p = (j * NX + i) * 4;
+          img.data[p] = c[0]; img.data[p + 1] = c[1]; img.data[p + 2] = c[2]; img.data[p + 3] = 175;
+        }
+      }
+      octx.putImageData(img, 0, 0);
+
+      const cw = Math.round(L * SCALE + pad * 2), ch = Math.round(W * SCALE + pad * 2);
+      ctx.fillStyle = '#1a2233'; ctx.fillRect(0, 0, cw, ch);
+      ctx.save();
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(off, pad, pad, L * SCALE, W * SCALE);
+      ctx.restore();
+
+      // listener SPL vs room average
+      const li = Math.min(NX - 1, Math.round(listenPos / step));
+      const lj = Math.min(NY - 1, Math.round((W / 2) / step));
+      const dev = db[lj * NX + li] - avgDb;
+      const devCol = Math.abs(dev) > 6 ? '#ef4444' : Math.abs(dev) > 3 ? '#f59e0b' : '#10b981';
+      ctx.font = '9px JetBrains Mono'; ctx.textAlign = 'right';
+      ctx.fillStyle = devCol;
+      ctx.fillText(`listener ${dev >= 0 ? '+' : ''}${dev.toFixed(1)} dB vs room avg @ ${freq} Hz`, cw - 10, ch - 22);
+      ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.font = '8px Inter';
+      ctx.fillText(`modal Green's function · ${nModes} modes ≤ ${Math.round(fmax)} Hz · both speakers coherent · RT60 ${rt60For(freq, showTreatment).toFixed(2)} s (${showTreatment ? 'treated' : 'untreated'}) · z = 1.2 m`, cw - 10, ch - 10);
+    }
+
+    // ===== FREQUENCY RESPONSE AT LISTENER (modal transfer function) =====
+    let frData = null;
+    const FR_F0 = 20, FR_F1 = 300;
+
+    function computeFR() {
+      const fmax = 420;
+      const nxMax = Math.floor(2 * L * fmax / SPEED);
+      const nyMax = Math.floor(2 * W * fmax / SPEED);
+      const nzMax = Math.floor(2 * H * fmax / SPEED);
+      const srcs = speakerSources();
+      const lx = listenPos, ly = W / 2;
+      const modes = [];
+      for (let nx = 0; nx <= nxMax; nx++) {
+        for (let ny = 0; ny <= nyMax; ny++) {
+          for (let nz = 0; nz <= nzMax; nz++) {
+            const fn = (SPEED / 2) * Math.sqrt((nx / L) ** 2 + (ny / W) ** 2 + (nz / H) ** 2);
+            if (fn > fmax) break;
+            const eps = (nx ? 2 : 1) * (ny ? 2 : 1) * (nz ? 2 : 1);
+            let srcSum = 0;
+            for (const s of srcs) srcSum += Math.cos(nx * Math.PI * s.x / L) * Math.cos(ny * Math.PI * s.y / W);
+            const num = eps * srcSum * Math.cos(nz * Math.PI * SPK_Z / H)
+              * Math.cos(nx * Math.PI * lx / L) * Math.cos(ny * Math.PI * ly / W) * Math.cos(nz * Math.PI * EAR_Z / H);
+            if (Math.abs(num) < 1e-9) continue;
+            modes.push({ on: 2 * Math.PI * fn, fn, num });
+          }
+        }
+      }
+      const freqs = [], tr = [], un = [];
+      for (let f = FR_F0; f <= FR_F1; f++) {
+        const om = 2 * Math.PI * f;
+        let tre = 0, tim = 0, ure = 0, uim = 0;
+        for (const m of modes) {
+          const dre = m.on * m.on - om * om;
+          const fEff = Math.max(m.fn, 20);
+          const dT = 2 * (6.91 / rt60For(fEff, true)) * om;
+          const dU = 2 * (6.91 / rt60For(fEff, false)) * om;
+          let dm = dre * dre + dT * dT;
+          tre += m.num * dre / dm; tim -= m.num * dT / dm;
+          dm = dre * dre + dU * dU;
+          ure += m.num * dre / dm; uim -= m.num * dU / dm;
+        }
+        freqs.push(f);
+        tr.push(10 * Math.log10(tre * tre + tim * tim + 1e-24));
+        un.push(10 * Math.log10(ure * ure + uim * uim + 1e-24));
+      }
+      frData = { freqs, tr, un };
+      updateAxialSummary();
+    }
+
+    function drawFR() {
+      const canvas = document.getElementById('frCanvas');
+      if (!canvas || !frData) return;
+      const dpr = window.devicePixelRatio || 1;
+      const wCss = canvas.parentElement.clientWidth || 700, hCss = 180;
+      canvas.width = wCss * dpr; canvas.height = hCss * dpr;
+      canvas.style.width = wCss + 'px'; canvas.style.height = hCss + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      ctx.fillStyle = '#1a2233'; ctx.fillRect(0, 0, wCss, hCss);
+
+      const padL = 34, padR = 10, padT = 24, padB = 20;
+      const all = frData.tr.concat(frData.un);
+      let lo = Math.floor((Math.min(...all) - 3) / 10) * 10;
+      let hi = Math.ceil((Math.max(...all) + 3) / 10) * 10;
+      const fx = f => padL + (f - FR_F0) / (FR_F1 - FR_F0) * (wCss - padL - padR);
+      const fy = v => padT + (hi - v) / (hi - lo) * (hCss - padT - padB);
+
+      ctx.font = '8px JetBrains Mono';
+      for (let v = lo; v <= hi; v += 10) {
+        ctx.strokeStyle = 'rgba(255,255,255,.06)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(padL, fy(v)); ctx.lineTo(wCss - padR, fy(v)); ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.textAlign = 'right';
+        ctx.fillText(v + '', padL - 4, fy(v) + 3);
+      }
+      ctx.textAlign = 'center';
+      for (let f = 50; f < FR_F1; f += 50) {
+        ctx.strokeStyle = 'rgba(255,255,255,.06)';
+        ctx.beginPath(); ctx.moveTo(fx(f), padT); ctx.lineTo(fx(f), hCss - padB); ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,.35)';
+        ctx.fillText(f + 'Hz', fx(f), hCss - 6);
+      }
+      // axial mode ticks
+      roomModes().filter(m => m.n <= 2 && m.f >= FR_F0 && m.f <= FR_F1).forEach(m => {
+        ctx.strokeStyle = 'rgba(124,58,237,.4)';
+        ctx.beginPath(); ctx.moveTo(fx(m.f), hCss - padB); ctx.lineTo(fx(m.f), hCss - padB - 6); ctx.stroke();
+        ctx.fillStyle = 'rgba(124,58,237,.65)'; ctx.font = '7px JetBrains Mono';
+        ctx.fillText(m.dim + m.n, fx(m.f), hCss - padB - 8);
+      });
+
+      function curve(data, color, active) {
+        ctx.beginPath();
+        frData.freqs.forEach((f, i) => {
+          const x = fx(f), y = fy(data[i]);
+          i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.strokeStyle = color; ctx.lineWidth = active ? 2 : 1.2;
+        ctx.setLineDash(active ? [] : [4, 4]);
+        ctx.stroke(); ctx.setLineDash([]);
+      }
+      curve(frData.un, showTreatment ? 'rgba(239,68,68,.4)' : 'rgba(239,68,68,.95)', !showTreatment);
+      curve(frData.tr, showTreatment ? 'rgba(0,212,255,.95)' : 'rgba(0,212,255,.4)', showTreatment);
+
+      // current heatmap frequency marker
+      if (selectedFreq >= FR_F0 && selectedFreq <= FR_F1) {
+        ctx.strokeStyle = 'rgba(16,185,129,.7)'; ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
+        ctx.beginPath(); ctx.moveTo(fx(selectedFreq), padT); ctx.lineTo(fx(selectedFreq), hCss - padB); ctx.stroke();
+        ctx.setLineDash([]);
+        const v = (showTreatment ? frData.tr : frData.un)[Math.round(selectedFreq) - FR_F0];
+        if (v !== undefined) {
+          ctx.fillStyle = '#10b981';
+          ctx.beginPath(); ctx.arc(fx(selectedFreq), fy(v), 3, 0, Math.PI * 2); ctx.fill();
+          ctx.font = '9px JetBrains Mono'; ctx.textAlign = 'left';
+          ctx.fillText(selectedFreq + ' Hz', fx(selectedFreq) + 5, padT + 8);
+        }
+      }
+      ctx.font = '8px Inter'; ctx.textAlign = 'left';
+      ctx.fillStyle = 'rgba(0,212,255,.9)'; ctx.fillText('— treated', wCss - 140, padT + 2);
+      ctx.fillStyle = 'rgba(239,68,68,.9)'; ctx.fillText('┄ untreated', wCss - 75, padT + 2);
+    }
+
+    function initFRClick() {
+      const canvas = document.getElementById('frCanvas');
+      if (!canvas) return;
+      canvas.style.cursor = 'crosshair';
+      canvas.addEventListener('click', e => {
+        const rect = canvas.getBoundingClientRect();
+        const padL = 34, padR = 10;
+        const f = Math.round(FR_F0 + (e.clientX - rect.left - padL) / (rect.width - padL - padR) * (FR_F1 - FR_F0));
+        if (f < FR_F0 || f > FR_F1) return;
+        document.getElementById('freqSliderRoom').value = f;
+        document.getElementById('freqValRoom').textContent = f + ' Hz';
+        syncFreq(f);
+      });
+    }
+
+    function updateAxialSummary() {
+      const el = document.getElementById('axialSummary');
+      if (!el || !frData) return;
+      const data = showTreatment ? frData.tr : frData.un;
+      const sorted = [...data].sort((a, b) => a - b);
+      const median = sorted[Math.floor(sorted.length / 2)];
+      const modes = roomModes().filter(m => m.n <= 2 && m.f >= FR_F0 && m.f <= FR_F1).slice(0, 6);
+      el.innerHTML = '';
+      modes.forEach(m => {
+        const v = data[Math.round(m.f) - FR_F0];
+        if (v === undefined) return;
+        const dev = v - median;
+        const mag = Math.abs(dev);
+        const sev = mag > 8 ? ['CRITICAL', 'var(--danger)'] : mag > 4 ? ['High', 'var(--warn)']
+          : mag > 2 ? ['Moderate', 'var(--warn)'] : ['Low', 'var(--accent3)'];
+        const kind = dev >= 0 ? 'peak' : 'null';
+        const width = Math.min(100, Math.max(8, mag * 7));
+        el.insertAdjacentHTML('beforeend', `
+          <div class="sw-bar-wrap">
+            <div class="sw-bar-label"><span>${m.f} Hz – ${m.name} ${m.n === 1 ? 'fundamental' : '2nd'}
+              (${dev >= 0 ? '+' : ''}${dev.toFixed(1)} dB ${kind})</span><span style="color:${sev[1]}">${sev[0]}</span></div>
+            <div class="sw-bar-track"><div class="sw-bar-fill" style="width:${width}%;background:${sev[1]}"></div></div>
+          </div>`);
+      });
+    }
+
+    // ===== FRONT VIEW (Width × Height) =====
+    function drawFrontView() {
+      const canvas = document.getElementById('frontCanvas');
+      if (!canvas) return;
+
+      const FW = W;  // front view horizontal = room width
+      const FH = H;  // front view vertical   = room height
+      const fPad = PAD;
+      // Match the main room scale exactly
+      const fScale = SCALE;
+
+      const fw = Math.round(FW * fScale + fPad * 2);
+      const fh = Math.round(FH * fScale + fPad * 2);
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = fw * dpr;
+      canvas.height = fh * dpr;
+      canvas.style.width = `${fw}px`;
+      canvas.style.height = `${fh}px`;
+
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      ctx.fillStyle = '#141e2e';
+      ctx.fillRect(0, 0, fw, fh);
+
+      const cx = (x) => fPad + x * fScale;
+      const cy = (y) => fPad + y * fScale;
+
+      // Title
+      ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font = '8px Inter'; ctx.textAlign = 'center';
+      ctx.fillText('FRONT VIEW', fw / 2, fPad - 16);
+      ctx.fillStyle = 'rgba(255,255,255,.3)';
+      ctx.fillText(`${Math.round(FW)}cm × ${Math.round(FH)}cm`, fw / 2, fPad - 6);
+
+      // Room outline
+      ctx.strokeStyle = 'rgba(255,255,255,.3)'; ctx.lineWidth = 1.5;
+      ctx.strokeRect(cx(0), cy(0), FW * fScale, FH * fScale);
+
+      // Ceiling cloud
+      const cloudW = 110, cloudH = 10;
+      ctx.fillStyle = 'rgba(16,185,129,.35)';
+      ctx.fillRect(cx(FW / 2 - cloudW / 2), cy(0), cloudW * fScale, cloudH * fScale);
+      ctx.fillStyle = 'rgba(16,185,129,.7)'; ctx.font = '6px Inter'; ctx.textAlign = 'center';
+      ctx.fillText('CEILING CLOUD', cx(FW / 2), cy(cloudH / 2) + 3);
+
+      // Ear height line
+      const earH = 120;
+      ctx.strokeStyle = 'rgba(16,185,129,.4)'; ctx.lineWidth = 1; ctx.setLineDash([2, 4]);
+      ctx.beginPath(); ctx.moveTo(cx(0), cy(earH)); ctx.lineTo(cx(FW), cy(earH)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(16,185,129,.55)'; ctx.font = '6px Inter'; ctx.textAlign = 'left';
+      ctx.fillText('ear 1.2m', cx(2), cy(earH) - 2);
+
+      // Center line
+      ctx.strokeStyle = 'rgba(255,255,255,.15)'; ctx.setLineDash([3, 6]);
+      ctx.beginPath(); ctx.moveTo(cx(FW / 2), cy(0)); ctx.lineTo(cx(FW / 2), cy(FH)); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Speaker face dimensions: ADAM A7V 340mm H x 200mm W
+      const spkFaceH = 34.0;  // cm
+      const spkFaceW = 20.0;  // cm
+      // Speakers sit on speaker stands ~90cm, so bottom of speaker at ~90cm from floor,
+      // but we just center them vertically around ear height for clarity
+      const spkBottom = earH + spkFaceH / 2;  // speaker bottom
+      const spkTop = earH - spkFaceH / 2;  // speaker top
+
+      function drawSpkFront(roomY, label) {
+        // roomY is the Y coordinate in top-view (= horizontal in front view)
+        ctx.fillStyle = 'rgba(22,22,32,.95)';
+        ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 1;
+        ctx.fillRect(cx(roomY - spkFaceW / 2), cy(spkTop), spkFaceW * fScale, spkFaceH * fScale);
+        ctx.strokeRect(cx(roomY - spkFaceW / 2), cy(spkTop), spkFaceW * fScale, spkFaceH * fScale);
+
+        // Tweeter (upper ~25%)
+        const twY = spkTop + spkFaceH * 0.22;
+        ctx.fillStyle = 'rgba(245,158,11,.95)';
+        ctx.beginPath();
+        ctx.arc(cx(roomY), cy(twY), 3.5 * fScale, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(245,158,11,.4)'; ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.arc(cx(roomY), cy(twY), 5 * fScale, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Woofer (lower ~65%)
+        const wfY = spkTop + spkFaceH * 0.62;
+        ctx.fillStyle = 'rgba(60,60,70,.9)';
+        ctx.beginPath();
+        ctx.arc(cx(roomY), cy(wfY), 7 * fScale, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(245,158,11,.6)'; ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(cx(roomY), cy(wfY), 7 * fScale, 0, Math.PI * 2);
+        ctx.stroke();
+        // Spider/cone
+        ctx.strokeStyle = 'rgba(245,158,11,.25)'; ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.arc(cx(roomY), cy(wfY), 4 * fScale, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(245,158,11,.8)'; ctx.font = '6px JetBrains Mono'; ctx.textAlign = 'center';
+        ctx.fillText(label, cx(roomY), cy(spkBottom) + 8);
+      }
+
+      drawSpkFront(W / 2 - spkOffset, 'L');
+      drawSpkFront(W / 2 + spkOffset, 'R');
+
+      // Dimension annotations
+      ctx.fillStyle = 'rgba(0,212,255,.6)'; ctx.font = '7px JetBrains Mono'; ctx.textAlign = 'center';
+      const lSpkY = W / 2 - spkOffset;
+      const rSpkY = W / 2 + spkOffset;
+      ctx.fillText(Math.round(spkOffset * 2) + 'cm', cx((lSpkY + rSpkY) / 2), cy(FH) + 14);
+
+      // Bracket line for spread
+      ctx.strokeStyle = 'rgba(0,212,255,.4)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(cx(lSpkY), cy(FH) + 8); ctx.lineTo(cx(rSpkY), cy(FH) + 8); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx(lSpkY), cy(FH) + 5); ctx.lineTo(cx(lSpkY), cy(FH) + 11); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx(rSpkY), cy(FH) + 5); ctx.lineTo(cx(rSpkY), cy(FH) + 11); ctx.stroke();
+    }
+
+    // ===== WAVE VIZ =====
+    function syncFreq(val) {
+      document.getElementById('freqSlider').value = val;
+      updateWaveViz();
+    }
+
+    function syncSpkWidth(val) {
+      spkOffset = parseInt(val) / 2;
+      document.getElementById('spkWidthVal').textContent = val + ' cm';
+      saveSettings();
+      scheduleRedraw();
+    }
+
+    function updateWaveViz() {
+      const freq = parseInt(document.getElementById('freqSlider').value);
+      document.getElementById('freqVal').textContent = freq + ' Hz';
+      const fRoom = document.getElementById('freqSliderRoom');
+      if (fRoom) {
+        fRoom.value = freq;
+        document.getElementById('freqValRoom').textContent = freq + ' Hz';
+      }
+      selectedFreq = freq;
+      const canvas = document.getElementById('waveCanvas');
+      const ctx = canvas.getContext('2d');
+      const dim = currentDim === 'L' ? L : currentDim === 'W' ? W : H;
+      const lambda = SPEED / freq;
+      const halfLambdas = dim / (lambda / 2);
+      canvas.width = canvas.parentElement.clientWidth || 600;
+      const w = canvas.width, h = canvas.height || 180;
+      ctx.fillStyle = '#1a2233'; ctx.fillRect(0, 0, w, h);
+
+      // Draw standing wave
+      const mid = h / 2;
+      ctx.strokeStyle = 'rgba(0,212,255,.3)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(0, mid); ctx.lineTo(w, mid); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Pressure distribution
+      ctx.beginPath();
+      for (let x = 0; x <= w; x++) {
+        const pos = (x / w) * dim;
+        const p = Math.sin(2 * Math.PI * pos / lambda);
+        const y = mid - p * (h * .42);
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      const grad = ctx.createLinearGradient(0, 0, w, 0);
+      grad.addColorStop(0, 'rgba(0,212,255,.8)');
+      grad.addColorStop(0.5, 'rgba(124,58,237,.8)');
+      grad.addColorStop(1, 'rgba(0,212,255,.8)');
+      ctx.strokeStyle = grad; ctx.lineWidth = 2; ctx.stroke();
+
+      // Update the main room canvas heatmap + FR marker
+      if (showHeatmap) drawRoom();
+      drawFR();
+
+      // Fill
+      ctx.lineTo(w, mid); ctx.lineTo(0, mid); ctx.closePath();
+      ctx.fillStyle = 'rgba(0,212,255,.08)'; ctx.fill();
+
+      // Listening pos marker – uses live listenPos for length dim
+      const listenX = (currentDim === 'L') ? (listenPos / dim) * w : (dim / 2 / dim) * w;
+      ctx.strokeStyle = 'rgba(16,185,129,.8)'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(listenX, 0); ctx.lineTo(listenX, h); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(16,185,129,.9)'; ctx.font = '10px Inter'; ctx.textAlign = 'center';
+      ctx.fillText(currentDim === 'L' ? 'Listening (' + Math.round(listenPos) + 'cm)' : 'Center', listenX, 14);
+      // Pressure at listener
+      const pAtListen = Math.sin(2 * Math.PI * (currentDim === 'L' ? listenPos : dim / 2) / lambda);
+      const pct = Math.abs(pAtListen) * 100;
+      const pColor = pct > 70 ? '#ef4444' : pct > 35 ? '#f59e0b' : '#10b981';
+      ctx.fillStyle = pColor; ctx.font = 'bold 10px JetBrains Mono'; ctx.textAlign = 'right';
+      ctx.fillText('Pressure at listener: ' + (pct.toFixed(0)) + '%', w - 8, 14);
+      ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font = '11px JetBrains Mono'; ctx.textAlign = 'left';
+      ctx.fillText(`${freq}Hz | λ=${Math.round(lambda)}cm | ${dim}cm ${currentDim === 'L' ? 'length' : currentDim === 'W' ? 'width' : 'height'} | ${halfLambdas.toFixed(1)} half-waves`, 10, h - 10);
+    }
+
+    function setDim(d) {
+      currentDim = d;
+      ['L', 'W', 'H'].forEach(x => {
+        const el = document.getElementById('btn' + x);
+        if (el) el.classList.toggle('active', x === d);
+      });
+      updateWaveViz();
+    }
+
+    function setTreatment(v) {
+      showTreatment = v;
+      document.getElementById('btnTreated').classList.toggle('active', v);
+      document.getElementById('btnUntreated').classList.toggle('active', !v);
+      drawRoom();       // heatmap damping (RT60) depends on treatment
+      drawFR();         // swap which response curve is highlighted
+      updateAxialSummary();
+    }
+
+    function switchTab(t) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + t).classList.add('active');
+      event.target.classList.add('active');
+      if (t === 'waves') updateWaveViz();
+      if (t === 'room') { drawRoom(); drawFrontView(); }
+    }
+
+    // ===== INIT =====
+    function updateScale() {
+      // Canvas is Landscape: top view width = L, front view width = W
+      // Total proportional width needed = L + W
+      // Add padding and gap: 2 * PAD for room, 2 * PAD for front view, + ~20px gap -> ~80 total
+      const targetHeight = window.innerHeight * 0.72;
+      const totalWidth = L + W + 80;
+      const targetWidth = window.innerWidth * 0.95;
+
+      const newScaleH = targetHeight / Math.max(W, H);
+      const newScaleW = targetWidth / totalWidth;
+
+      const newScale = Math.min(newScaleH, newScaleW);
+      SCALE = Math.max(0.55, Math.min(newScale, 1.6));
+    }
+
+    window.addEventListener('load', () => {
+      loadSettings();
+      updateScale();
+      drawRoom(); drawFrontView(); buildModeTable(); updateWaveViz(); updateSidebar(); initDrag();
+      computeFR(); drawFR(); initFRClick();
+      document.getElementById('btnL').textContent = 'Length ' + parseFloat((L / 100).toFixed(2)) + 'm';
+      document.getElementById('btnW').textContent = 'Width ' + parseFloat((W / 100).toFixed(2)) + 'm';
+      document.getElementById('btnH').textContent = 'Height ' + parseFloat((H / 100).toFixed(2)) + 'm';
+    });
+    window.addEventListener('resize', () => {
+      updateScale();
+      drawRoom(); drawFrontView(); drawFR();
+      if (document.getElementById('tab-waves').classList.contains('active')) updateWaveViz();
+    });
+  </script>
+</body>
+
+</html>
