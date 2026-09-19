@@ -192,7 +192,8 @@
     .view-row { flex-direction: row; align-items: flex-start; gap: 16px; flex-wrap: wrap; overflow-x: auto }
     .view-col { display: flex; flex-direction: column; gap: 8px; min-width: 0 }
 
-    canvas { display: block; border-radius: 6px; max-width: 100%; min-width: 400px; height: auto }
+    canvas { display: block; border-radius: 6px; max-width: 100%; height: auto }
+    #frCanvas, #waveCanvas { min-width: 400px }
 
     .canvas-label {
       font-size: 13px;
@@ -427,7 +428,7 @@
     .info-box strong { color: var(--foreground) }
 
     .tooltip {
-      position: absolute;
+      position: fixed;
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 6px;
@@ -571,7 +572,6 @@
         <div class="canvas-wrap chart-wrap">
           <span class="canvas-label">Modal frequency response at the listening position. The solid grey line is the active treatment state, the dashed line is the other state. Hover for a crosshair, click to set the heatmap frequency.</span>
           <canvas id="frCanvas" height="180"></canvas>
-          <div class="tooltip" id="tooltip"></div>
         </div>
 
         <div class="legend">
@@ -803,6 +803,7 @@
       </div>
     </div>
   </div>
+  <div class="tooltip" id="tooltip"></div>
 
     <script>
     // ===== STATE & CONSTANTS =====
@@ -1246,6 +1247,18 @@
     }
 
     function drawTreatment(ctx, cx, cy) {
+      const diffTile = document.createElement('canvas');
+      diffTile.width = 6; diffTile.height = 6;
+      const dtx = diffTile.getContext('2d');
+      dtx.fillStyle = INK.muted; dtx.fillRect(0, 0, 6, 6);
+      dtx.strokeStyle = INK.dim; dtx.lineWidth = 2;
+      dtx.beginPath();
+      dtx.moveTo(0, 6); dtx.lineTo(6, 0);
+      dtx.moveTo(-6, 6); dtx.lineTo(0, 0);
+      dtx.moveTo(6, 12); dtx.lineTo(12, 6);
+      dtx.stroke();
+      const diffPattern = ctx.createPattern(diffTile, 'repeat');
+
       function panel(x, y, w, h, color, label, rotateLabel = false) {
         ctx.fillStyle = color;
         ctx.fillRect(cx(x), cy(y), w * SCALE, h * SCALE);
@@ -1304,10 +1317,10 @@
       panel(L - 12, W / 2 - 105, 12, 100, tone(INK.info,.30), '');
       panel(L - 12, W / 2 + 5, 12, 100, tone(INK.info,.30), '');
 
-      panel(L - 22, 25, 10, 40, tone(INK.muted,.9), '', true);
-      panel(L - 22, 90, 10, 40, tone(INK.muted,.9), '', true);
-      panel(L - 22, W - 130, 10, 40, tone(INK.muted,.9), '', true);
-      panel(L - 22, W - 65, 10, 40, tone(INK.muted,.9), '', true);
+      panel(L - 22, 25, 10, 40, diffPattern, '', true);
+      panel(L - 22, 90, 10, 40, diffPattern, '', true);
+      panel(L - 22, W - 130, 10, 40, diffPattern, '', true);
+      panel(L - 22, W - 65, 10, 40, diffPattern, '', true);
 
       ctx.save();
       ctx.fillStyle = INK.dim; ctx.font = '12px Inter'; ctx.textAlign = 'center';
@@ -1679,15 +1692,13 @@
       const i = f - FR_F0;
       frHover = { x: padL + (f - FR_F0) / (FR_F1 - FR_F0) * (wCss - padL - padR) };
       drawFR();
-      const wrap = canvas.parentElement;
-      const wrapRect = wrap.getBoundingClientRect();
       tip.innerHTML = f + ' Hz<br>treated ' + frData.tr[i].toFixed(1) + ' dB<br>untreated ' + frData.un[i].toFixed(1) + ' dB';
       tip.style.display = 'block';
       const tw = tip.offsetWidth;
-      const localX = (rect.left - wrapRect.left - wrap.clientLeft) + frHover.x;
-      const localY = (rect.top - wrapRect.top - wrap.clientTop) + 8;
-      tip.style.left = Math.min(Math.max(localX - tw / 2, 4), Math.max(4, wrapRect.width - tw - 4)) + 'px';
-      tip.style.top = localY + 'px';
+      const vx = rect.left + frHover.x;
+      const vy = rect.top + 8;
+      tip.style.left = Math.min(Math.max(vx - tw / 2, 4), Math.max(4, window.innerWidth - tw - 4)) + 'px';
+      tip.style.top = vy + 'px';
     }
     function frHoverEnd() {
       frHover = null;
@@ -1870,29 +1881,19 @@
       scheduleRedraw();
     }
 
-    function updateWaveViz() {
-      const freq = parseInt(document.getElementById('freqSlider').value);
-      document.getElementById('freqVal').textContent = freq + ' Hz';
-      const fRoom = document.getElementById('freqSliderRoom');
-      if (fRoom) {
-        fRoom.value = freq;
-        document.getElementById('freqValRoom').textContent = freq + ' Hz';
-      }
-      selectedFreq = freq;
+    let waveHover = null;
+
+    function drawWave() {
       const canvas = document.getElementById('waveCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr, h = canvas.height / dpr;
+      const freq = parseInt(document.getElementById('freqSlider').value);
       const dim = currentDim === 'L' ? L : currentDim === 'W' ? W : H;
       const lambda = SPEED / freq;
       const halfLambdas = dim / (lambda / 2);
-      const wrap = canvas.parentElement;
-      const cs = getComputedStyle(wrap);
-      const w = Math.max(400, Math.floor(wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)));
-      const h = 180;
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
-      canvas.style.width = w + 'px';
-      canvas.style.height = h + 'px';
-      const ctx = canvas.getContext('2d');
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(dpr, dpr);
       ctx.fillStyle = INK.bg; ctx.fillRect(0, 0, w, h);
 
@@ -1912,13 +1913,14 @@
       }
       ctx.strokeStyle = INK.info; ctx.lineWidth = 2; ctx.stroke();
 
-      // Update the main room canvas heatmap + FR marker
-      if (showHeatmap) drawRoom();
-      drawFR();
-
       // Fill
       ctx.lineTo(w, mid); ctx.lineTo(0, mid); ctx.closePath();
       ctx.fillStyle = tone(INK.info,.12); ctx.fill();
+
+      if (waveHover !== null) {
+        ctx.strokeStyle = tone(INK.line,.35); ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(waveHover, 0); ctx.lineTo(waveHover, h); ctx.stroke();
+      }
 
       // Listening pos marker – uses live listenPos for length dim
       const listenX = (currentDim === 'L') ? (listenPos / dim) * w : (dim / 2 / dim) * w;
@@ -1939,6 +1941,69 @@
       ctx.fillStyle = INK.dim; ctx.font = '12px JetBrains Mono'; ctx.textAlign = 'left';
       ctx.fillText(`${freq} Hz, wavelength ${Math.round(lambda)} cm`, 10, h - 28);
       ctx.fillText(`${dim} cm ${currentDim === 'L' ? 'length' : currentDim === 'W' ? 'width' : 'height'}, ${halfLambdas.toFixed(1)} half waves`, 10, h - 10);
+    }
+
+    function updateWaveViz() {
+      const freq = parseInt(document.getElementById('freqSlider').value);
+      document.getElementById('freqVal').textContent = freq + ' Hz';
+      const fRoom = document.getElementById('freqSliderRoom');
+      if (fRoom) {
+        fRoom.value = freq;
+        document.getElementById('freqValRoom').textContent = freq + ' Hz';
+      }
+      selectedFreq = freq;
+      const canvas = document.getElementById('waveCanvas');
+      const wrap = canvas.parentElement;
+      const cs = getComputedStyle(wrap);
+      const w = Math.max(400, Math.floor(wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)));
+      const h = 180;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      waveHover = null;
+      drawWave();
+      if (showHeatmap) drawRoom();
+      drawFR();
+    }
+
+    function waveHoverMove(e) {
+      const canvas = document.getElementById('waveCanvas');
+      const tip = document.getElementById('tooltip');
+      if (!canvas || !tip) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      if (x < 0 || x > rect.width) { waveHoverEnd(); return; }
+      const lw = canvas.width / (window.devicePixelRatio || 1);
+      const drawX = x * lw / rect.width;
+      waveHover = drawX;
+      drawWave();
+      const dim = currentDim === 'L' ? L : currentDim === 'W' ? W : H;
+      const pos = (drawX / lw) * dim;
+      const freq = parseInt(document.getElementById('freqSlider').value);
+      const lambda = SPEED / freq;
+      const pct = Math.abs(Math.sin(2 * Math.PI * pos / lambda)) * 100;
+      tip.innerHTML = Math.round(pos) + ' cm<br>' + pct.toFixed(0) + '%';
+      tip.style.display = 'block';
+      const tw = tip.offsetWidth;
+      tip.style.left = Math.min(Math.max(rect.left + x - tw / 2, 4), Math.max(4, window.innerWidth - tw - 4)) + 'px';
+      tip.style.top = (rect.top + 8) + 'px';
+    }
+
+    function waveHoverEnd() {
+      waveHover = null;
+      const tip = document.getElementById('tooltip');
+      if (tip) tip.style.display = 'none';
+      drawWave();
+    }
+
+    function initWaveHover() {
+      const canvas = document.getElementById('waveCanvas');
+      if (!canvas) return;
+      canvas.style.cursor = 'crosshair';
+      canvas.addEventListener('mousemove', waveHoverMove);
+      canvas.addEventListener('mouseleave', waveHoverEnd);
     }
 
     function setDim(d) {
@@ -2006,7 +2071,7 @@
       loadSettings();
       updateScale();
       drawRoom(); drawFrontView(); updateWaveViz(); buildModeTable(); updateSidebar(); initDrag();
-      computeFR(); drawFR(); initFRClick();
+      computeFR(); drawFR(); initFRClick(); initWaveHover();
       document.getElementById('btnL').textContent = 'Length ' + parseFloat((L / 100).toFixed(2)) + 'm';
       document.getElementById('btnW').textContent = 'Width ' + parseFloat((W / 100).toFixed(2)) + 'm';
       document.getElementById('btnH').textContent = 'Height ' + parseFloat((H / 100).toFixed(2)) + 'm';
