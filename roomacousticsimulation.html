@@ -1572,6 +1572,7 @@
         un.push(10 * Math.log10(ure * ure + uim * uim + 1e-24));
       }
       frData = { freqs, tr, un };
+      clearChartHover();
       updateAxialSummary();
     }
 
@@ -1583,9 +1584,13 @@
       const cs = getComputedStyle(wrap);
       const wCss = Math.max(400, Math.floor(wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)));
       const hCss = 180;
-      canvas.width = wCss * dpr; canvas.height = hCss * dpr;
-      canvas.style.width = wCss + 'px'; canvas.style.height = hCss + 'px';
+      const bw = Math.round(wCss * dpr), bh = Math.round(hCss * dpr);
+      if (canvas.width !== bw || canvas.height !== bh) {
+        canvas.width = bw; canvas.height = bh;
+        canvas.style.width = wCss + 'px'; canvas.style.height = hCss + 'px';
+      }
       const ctx = canvas.getContext('2d');
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(dpr, dpr);
       ctx.fillStyle = INK.bg; ctx.fillRect(0, 0, wCss, hCss);
 
@@ -1675,6 +1680,12 @@
 
     // crosshair + tooltip: the house rule for every line chart
     let frHover = null;
+    function clearChartHover() {
+      frHover = null;
+      waveHover = null;
+      const tip = document.getElementById('tooltip');
+      if (tip) tip.style.display = 'none';
+    }
     function frHoverMove(e) {
       const canvas = document.getElementById('frCanvas');
       const tip = document.getElementById('tooltip');
@@ -1961,9 +1972,7 @@
       canvas.height = h * dpr;
       canvas.style.width = w + 'px';
       canvas.style.height = h + 'px';
-      waveHover = null;
-      const tip = document.getElementById('tooltip');
-      if (tip) tip.style.display = 'none';
+      clearChartHover();
       drawWave();
       if (showHeatmap) drawRoom();
       drawFR();
@@ -2044,10 +2053,7 @@
     }
 
     function switchTab(t, el) {
-      frHover = null;
-      waveHover = null;
-      const tip = document.getElementById('tooltip');
-      if (tip) tip.style.display = 'none';
+      clearChartHover();
       document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
       document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
       document.getElementById('tab-' + t).classList.add('active');
