@@ -191,7 +191,7 @@
     .view-row { flex-direction: row; align-items: flex-start; gap: 16px; flex-wrap: wrap; overflow-x: auto }
     .view-col { display: flex; flex-direction: column; gap: 8px; min-width: 0 }
 
-    canvas { display: block; border-radius: 6px; max-width: 100% }
+    canvas { display: block; border-radius: 6px; max-width: 100%; height: auto }
 
     .canvas-label {
       font-size: 13px;
@@ -1105,7 +1105,6 @@
       canvas.width = cw * dpr;
       canvas.height = ch * dpr;
       canvas.style.width = `${cw}px`;
-      canvas.style.height = `${ch}px`;
 
       const ctx = canvas.getContext('2d');
       ctx.scale(dpr, dpr);
@@ -1427,7 +1426,6 @@
       // complex coefficient per (nx,ny) pair with all z-modes folded in
       const coefRe = new Float32Array((nxMax + 1) * (nyMax + 1));
       const coefIm = new Float32Array((nxMax + 1) * (nyMax + 1));
-      let nModes = 0;
       for (let nx = 0; nx <= nxMax; nx++) {
         for (let ny = 0; ny <= nyMax; ny++) {
           let cr = 0, ci = 0;
@@ -1445,7 +1443,6 @@
             const dmag = dre * dre + dim * dim;
             cr += num * dre / dmag;
             ci -= num * dim / dmag;
-            nModes++;
           }
           coefRe[nx * (nyMax + 1) + ny] = cr;
           coefIm[nx * (nyMax + 1) + ny] = ci;
@@ -1511,10 +1508,9 @@
       const devCol = Math.abs(dev) > 6 ? INK.crit : Math.abs(dev) > 3 ? INK.warn : INK.good;
       ctx.font = '12px JetBrains Mono'; ctx.textAlign = 'right';
       ctx.fillStyle = devCol;
-      ctx.fillText(`listener ${dev >= 0 ? '+' : ''}${dev.toFixed(1)} dB vs room avg @ ${freq} Hz`, cw - 10, ch - 42);
+      ctx.fillText(`listener ${dev >= 0 ? '+' : ''}${dev.toFixed(1)} dB vs room avg @ ${freq} Hz`, cw - 10, ch - 26);
       ctx.fillStyle = INK.dim; ctx.font = '12px Inter';
-      ctx.fillText(`Green's function, ${nModes} modes at or below ${Math.round(fmax)} Hz, both speakers coherent`, cw - 10, ch - 26);
-      ctx.fillText(`RT60 ${rt60For(freq, showTreatment).toFixed(2)} s (${showTreatment ? 'treated' : 'untreated'}), ear height 1.2 m`, cw - 10, ch - 10);
+      ctx.fillText(`RT60 ${rt60For(freq, showTreatment).toFixed(2)} s (${showTreatment ? 'treated' : 'untreated'}), ear height 1.2 m`, cw - 10, ch - 8);
     }
 
     // ===== FREQUENCY RESPONSE AT LISTENER (modal transfer function) =====
@@ -1747,7 +1743,6 @@
       canvas.width = fw * dpr;
       canvas.height = fh * dpr;
       canvas.style.width = `${fw}px`;
-      canvas.style.height = `${fh}px`;
 
       const ctx = canvas.getContext('2d');
       ctx.scale(dpr, dpr);
@@ -1872,16 +1867,20 @@
       }
       selectedFreq = freq;
       const canvas = document.getElementById('waveCanvas');
-      const ctx = canvas.getContext('2d');
       const dim = currentDim === 'L' ? L : currentDim === 'W' ? W : H;
       const lambda = SPEED / freq;
       const halfLambdas = dim / (lambda / 2);
       const wrap = canvas.parentElement;
       const cs = getComputedStyle(wrap);
       const w = Math.max(200, Math.floor(wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)));
-      canvas.width = w;
+      const h = 180;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
       canvas.style.width = w + 'px';
-      const h = canvas.height || 180;
+      canvas.style.height = h + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
       ctx.fillStyle = INK.bg; ctx.fillRect(0, 0, w, h);
 
       // Draw standing wave
