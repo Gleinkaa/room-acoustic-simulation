@@ -1059,7 +1059,7 @@
       dims.forEach(d => {
         for (let n = 1; n <= 4; n++) {
           const f = Math.round((n * SPEED) / (2 * d.val));
-          let sev = 'low', sevClass = 'severity-low';
+          let sev = 'Low', sevClass = 'severity-low';
           if (d.sym === 'W' && n === 1) { sev = 'CRITICAL'; sevClass = 'severity-high'; }
           else if (d.sym === 'H' && n === 1) { sev = 'High'; sevClass = 'severity-med'; }
           else if (d.sym === 'L' && n === 1) { sev = 'Moderate'; sevClass = 'severity-low'; }
@@ -2044,6 +2044,10 @@
     }
 
     function switchTab(t, el) {
+      frHover = null;
+      waveHover = null;
+      const tip = document.getElementById('tooltip');
+      if (tip) tip.style.display = 'none';
       document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
       document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
       document.getElementById('tab-' + t).classList.add('active');
