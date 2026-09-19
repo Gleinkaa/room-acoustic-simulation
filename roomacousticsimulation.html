@@ -223,8 +223,10 @@
 
     .dot-ink { background: var(--foreground) }
     .dot-info { background: var(--info) }
-    .dot-info-soft { background: color-mix(in oklab, var(--info) 40%, transparent) }
+    .dot-trap { background: color-mix(in oklab, var(--foreground) 18%, transparent); border: 1px solid var(--info) }
+    .dot-cloud { background: color-mix(in oklab, var(--info) 16%, transparent) }
     .dot-muted { background: var(--muted); border: 1px solid var(--border) }
+    .dot-diffuser { background: color-mix(in oklab, var(--muted) 90%, transparent); border: 1px solid var(--border) }
     .dot-ring { background: transparent; border: 2px solid var(--foreground); border-radius: 999px }
 
     /* ---------- cards ---------- */
@@ -555,19 +557,19 @@
 
         <div class="canvas-wrap view-row chart-wrap">
           <div class="view-col">
-            <span class="canvas-label">Top-down view. Drag the listening position, the speaker wall distance, or the speaker spread.</span>
+            <span class="canvas-label">Top-down view. Drag the listening position, the speaker wall distance, or the speaker spread. Drawn panel strips are schematic; the panel count summary gives the product sizes.</span>
             <canvas id="roomCanvas"></canvas>
           </div>
           <div class="view-col">
             <span class="canvas-label">Front view</span>
             <canvas id="frontCanvas"></canvas>
           </div>
-          <div class="tooltip" id="tooltip"></div>
         </div>
 
         <div class="canvas-wrap chart-wrap">
           <span class="canvas-label">Modal frequency response at the listening position. The solid grey line is the active treatment state, the dashed line is the other state. Hover for a crosshair, click to set the heatmap frequency.</span>
           <canvas id="frCanvas" height="180"></canvas>
+          <div class="tooltip" id="tooltip"></div>
         </div>
 
         <div class="legend">
@@ -575,9 +577,9 @@
           <span class="legend-item"><span class="legend-dot dot-ring"></span>Listening position</span>
           <span class="legend-item"><span class="legend-dot dot-muted"></span>Desk</span>
           <span class="legend-item"><span class="legend-dot dot-info"></span>Absorber panels</span>
-          <span class="legend-item"><span class="legend-dot dot-info-soft"></span>Corner bass traps</span>
-          <span class="legend-item"><span class="legend-dot dot-info-soft"></span>Ceiling cloud</span>
-          <span class="legend-item"><span class="legend-dot dot-muted"></span>Diffusers</span>
+          <span class="legend-item"><span class="legend-dot dot-trap"></span>Corner bass traps</span>
+          <span class="legend-item"><span class="legend-dot dot-cloud"></span>Ceiling cloud</span>
+          <span class="legend-item"><span class="legend-dot dot-diffuser"></span>Diffusers</span>
         </div>
 
         <div class="btn-row">
@@ -593,7 +595,7 @@
       <div id="tab-waves" class="tab-content">
         <div class="card">
           <h3><svg class="icon muted"><use href="#i-bolt"/></svg>Standing wave calculator</h3>
-          <div class="info-box">Room modes are resonant frequencies where sound builds up or cancels. The narrowest dimension, currently <strong id="info-width-live">2.77 m</strong>, drives the lowest width mode and the strongest comb filtering at the listening position.</div>
+          <div class="info-box">Room modes are resonant frequencies where sound builds up or cancels. The <strong id="info-width-live">2.77 m</strong> width drives the lowest width mode and the strongest comb filtering at the listening position.</div>
           <div class="ctrl-row">
             <span class="ctrl-label">Frequency</span>
             <input type="range" id="freqSlider" min="20" max="400" value="62" oninput="updateWaveViz()">
@@ -640,16 +642,16 @@
           <div class="stat-row"><span class="stat-label">Speaker spacing (tweeter to tweeter)</span><span class="stat-val mono good" id="tp-spacing">119 cm</span></div>
           <div class="stat-row"><span class="stat-label">Listening distance from front wall</span><span class="stat-val mono good" id="tp-listen">201 cm</span></div>
           <div class="stat-row"><span class="stat-label">38% rule target</span><span class="stat-val mono" id="tp-38pct">201 cm</span></div>
-          <div class="stat-row"><span class="stat-label">Listening triangle</span><span class="stat-val mono good" id="tp-triangle">119 cm</span></div>
-          <div class="stat-row"><span class="stat-label">Toe-in angle</span><span class="stat-val mono good" id="tp-toein">18&deg;</span></div>
-          <div class="stat-row"><span class="stat-label">Tweeter height</span><span class="stat-val good">110-115 cm (ear height seated)</span></div>
+          <div class="stat-row"><span class="stat-label">Listening triangle</span><span class="stat-val mono good" id="tp-triangle">117 cm</span></div>
+          <div class="stat-row"><span class="stat-label">Toe-in angle</span><span class="stat-val mono good" id="tp-toein">31&deg;</span></div>
+          <div class="stat-row"><span class="stat-label">Tweeter height</span><span class="stat-val good">120 cm (ear height seated)</span></div>
           <span class="stat-note" id="tp-note">Speakers centred at &plusmn;59.5 cm from the room centre line.</span>
         </div>
         <div class="card">
           <h3><svg class="icon muted"><use href="#i-layers"/></svg>Treatment priority order</h3>
           <div class="priority-item">
             <div class="priority-num">1</div>
-            <div class="priority-text"><strong>Corner bass traps, all four floor-to-ceiling corners</strong>Biggest low-frequency improvement. 20 cm Rockwool superchunk or floor-to-ceiling tube traps. Addresses the axial modes of the 2.77 m width around <span id="pr-widthfund" class="mono">62 Hz</span>.</div>
+            <div class="priority-text"><strong>Corner bass traps, all four floor-to-ceiling corners</strong>Biggest low-frequency improvement. 20 cm Rockwool superchunk or floor-to-ceiling tube traps. Addresses the axial modes of the <span id="pr-width" class="mono">2.77 m</span> width around <span id="pr-widthfund" class="mono">62 Hz</span>.</div>
           </div>
           <div class="priority-item">
             <div class="priority-num">2</div>
@@ -674,9 +676,9 @@
         </div>
         <div class="card">
           <h3><svg class="icon muted"><use href="#i-target"/></svg>First reflection points</h3>
-          <div class="stat-row"><span class="stat-label">Left side wall, from front wall</span><span class="stat-val mono" id="live-refl-l">162 cm</span></div>
-          <div class="stat-row"><span class="stat-label">Right side wall, from front wall</span><span class="stat-val mono" id="live-refl-r">162 cm</span></div>
-          <div class="stat-row"><span class="stat-label">Ceiling, from front wall</span><span class="stat-val mono" id="live-refl-c">162 cm</span></div>
+          <div class="stat-row"><span class="stat-label">Left side wall, from front wall</span><span class="stat-val mono" id="live-refl-l">~137 cm</span></div>
+          <div class="stat-row"><span class="stat-label">Right side wall, from front wall</span><span class="stat-val mono" id="live-refl-r">~137 cm</span></div>
+          <div class="stat-row"><span class="stat-label">Ceiling, from front wall</span><span class="stat-val mono" id="live-refl-c">~151 cm from front</span></div>
           <div class="stat-row"><span class="stat-label">Panel size, side walls</span><span class="stat-val">60 x 120 cm each</span></div>
           <div class="stat-row"><span class="stat-label">Panel size, ceiling cloud</span><span class="stat-val">100 x 120 cm</span></div>
         </div>
@@ -698,11 +700,11 @@
               <tr><td>Ceiling cloud</td><td>Absorber</td><td class="mono">100 x 120 cm</td><td>1</td></tr>
               <tr><td>Back wall, lower</td><td>Absorber</td><td class="mono">120 x 60 cm</td><td>2</td></tr>
               <tr><td>Back wall, upper</td><td>Diffuser 1D</td><td class="mono">60 x 60 cm</td><td>4</td></tr>
-              <tr><td>Front four corners</td><td>Bass trap, floor to ceiling</td><td class="mono">20 cm thick</td><td>4</td></tr>
-              <tr><td>Rear four corners</td><td>Soffit or superchunk</td><td class="mono">30 cm</td><td>4</td></tr>
-              <tr><td colspan="3"><strong>Broadband absorbers</strong></td><td><strong>9</strong></td></tr>
+              <tr><td>Front corners</td><td>Bass trap, floor to ceiling</td><td class="mono">20 cm thick</td><td>2</td></tr>
+              <tr><td>Rear corners</td><td>Soffit or superchunk</td><td class="mono">30 cm</td><td>2</td></tr>
+              <tr><td colspan="3"><strong>Broadband absorbers</strong></td><td><strong>12</strong></td></tr>
               <tr><td colspan="3"><strong>Diffusers</strong></td><td><strong>4</strong></td></tr>
-              <tr><td colspan="3"><strong>Corner traps and soffits</strong></td><td><strong>8 corners</strong></td></tr>
+              <tr><td colspan="3"><strong>Corner traps and soffits</strong></td><td><strong>4 corners</strong></td></tr>
             </tbody>
           </table>
         </div>
@@ -725,7 +727,7 @@
           <h3><svg class="icon muted"><use href="#i-speaker"/></svg>Bass trap specs</h3>
           <div class="stat-row"><span class="stat-label">Type, corners</span><span class="stat-val good">Superchunk, stacked triangular Rockwool</span></div>
           <div class="stat-row"><span class="stat-label">Corner depth</span><span class="stat-val mono good">20-30 cm per face</span></div>
-          <div class="stat-row"><span class="stat-label">Height</span><span class="stat-val mono good">250 cm, floor to ceiling, no gaps</span></div>
+          <div class="stat-row"><span class="stat-label">Height</span><span class="stat-val mono good" id="trap-height">250 cm, floor to ceiling, no gaps</span></div>
           <div class="stat-row"><span class="stat-label">Material</span><span class="stat-val mono">Rockwool RWA45, 60-80 kg/m&sup3;</span></div>
           <div class="stat-row"><span class="stat-label">Front corners</span><span class="stat-val warn">Highest priority, speaker-corner coupling zone</span></div>
           <div class="stat-row"><span class="stat-label">Rear corners</span><span class="stat-val">Soffit traps or superchunk</span></div>
@@ -762,7 +764,7 @@
         <div class="stat-row"><span class="stat-label">Height</span><span class="stat-val mono" id="live-dim-H">250 cm</span></div>
         <div class="stat-row"><span class="stat-label">Volume</span><span class="stat-val mono" id="live-dim-vol">36.7 m&sup3;</span></div>
         <div class="stat-row"><span class="stat-label">Aspect ratio L:W</span><span class="stat-val mono" id="live-dim-ratio">1.91:1</span></div>
-        <div class="stat-row"><span class="stat-label">Schroeder frequency</span><span class="stat-val mono" id="live-dim-schroeder">180 Hz</span></div>
+        <div class="stat-row"><span class="stat-label">Schroeder frequency</span><span class="stat-val mono" id="live-dim-schroeder">~209 Hz</span></div>
       </div>
       <div class="card">
         <h3><svg class="icon muted"><use href="#i-speaker"/></svg>Key placements</h3>
@@ -773,8 +775,8 @@
         <div class="stat-row"><span class="stat-label">Listening position</span><span class="stat-val mono good" id="live-listenpos">201 cm</span></div>
         <div class="stat-row"><span class="stat-label">38% rule target</span><span class="stat-val mono" id="live-38pct">201 cm</span></div>
         <div class="stat-row"><span class="stat-label">Listening to back wall</span><span class="stat-val mono" id="live-backwall">329 cm</span></div>
-        <div class="stat-row"><span class="stat-label">Listening triangle</span><span class="stat-val mono" id="live-triangle">119 cm</span></div>
-        <div class="stat-row"><span class="stat-label">Toe-in angle</span><span class="stat-val mono" id="live-toein">18&deg;</span></div>
+        <div class="stat-row"><span class="stat-label">Listening triangle</span><span class="stat-val mono" id="live-triangle">~117 cm</span></div>
+        <div class="stat-row"><span class="stat-label">Toe-in angle</span><span class="stat-val mono" id="live-toein">~31&deg;</span></div>
         <div class="stat-row" id="live-38warn" style="display:none"><span class="stat-label">Deviation from 38%</span><span class="stat-val warn" id="live-38dev"></span></div>
       </div>
       <div class="card">
@@ -852,8 +854,8 @@
       updateScale();
       drawRoom();
       drawFrontView();
-      buildModeTable();
       updateWaveViz();
+      buildModeTable();
       updateSidebar();
       computeFR();
       drawFR();
@@ -897,7 +899,7 @@
     let spkOffset = 59.5;  // cm from center to each speaker
 
     let showTreatment = true, showHeatmap = true, showReflections = true;
-    let currentDim = 'W', selectedFreq = 58;
+    let currentDim = 'W', selectedFreq = 62;
 
     // ===== DRAG STATE =====
     let drag = null; // null | 'listen' | 'spkwall' | 'spkspread'
@@ -939,8 +941,8 @@
 
 
       const target38 = Math.round(L * 0.38);
-      const triSide = Math.round(Math.sqrt(Math.pow(spkOffset * 2, 2) + Math.pow(listenPos - spkWall, 2)));
-      const toein = Math.round(Math.atan2(W / 2 - spkOffset, listenPos - spkWall) * 180 / Math.PI);
+      const triSide = Math.round(Math.sqrt(Math.pow(spkOffset, 2) + Math.pow(listenPos - spkWall, 2)));
+      const toein = Math.round(Math.atan2(spkOffset, listenPos - spkWall) * 180 / Math.PI);
       const dev = listenPos - target38;
       document.getElementById('live-spkwall').textContent = Math.round(spkWall) + ' cm';
       document.getElementById('live-spkoffset').textContent = '±' + spkOffset.toFixed(1) + ' cm';
@@ -961,6 +963,8 @@
       setTxt('specs-w-width', (W / 100).toFixed(2) + ' m');
       setTxt('specs-w-mode', widthFund + ' Hz');
       setTxt('pr-widthfund', widthFund + ' Hz');
+      setTxt('pr-width', (W / 100).toFixed(2) + ' m');
+      setTxt('trap-height', H + ' cm, floor to ceiling, no gaps');
       setTxt('pr-lenfund', lenFund + ' Hz');
       setTxt('tp-sidewall', (W / 2 - spkOffset).toFixed(1) + ' cm');
       setTxt('tp-spacing', Math.round(spkOffset * 2) + ' cm');
@@ -1157,7 +1161,7 @@
       ctx.translate(cx(deskX + DESK_D / 2), cy(W / 2)); ctx.rotate(-Math.PI / 2);
       ctx.fillText('Desk', 0, 4); ctx.restore();
 
-      // ADAM A7V: 337mm H x 200mm W x 280mm D → scale: ~34H x 20W x 28D (in cm)
+      // ADAM A7V: 337mm H x 200mm W x 280mm D (top view: 20cm W x 28cm D)
       // In landscape view: speaker body extends in X direction (depth), width in Y
       const spkBodyW = 20;  // cm – speaker baffle width (Y axis)
       const spkBodyD = 28;  // cm – speaker depth (X axis)
@@ -1244,8 +1248,8 @@
         ctx.fillStyle = color;
         ctx.fillRect(cx(x), cy(y), w * SCALE, h * SCALE);
         if (label) {
-          ctx.fillStyle = INK.card;
-          ctx.font = '11px Inter'; ctx.textAlign = 'center';
+          ctx.fillStyle = INK.line;
+          ctx.font = '12px Inter'; ctx.textAlign = 'center';
           if (rotateLabel) {
             ctx.save();
             ctx.translate(cx(x + w / 2), cy(y + h / 2));
@@ -1276,9 +1280,9 @@
       const fwCenters = [W / 2 - 75, W / 2, W / 2 + 75];
       fwCenters.forEach(y => panel(0, y - 27.5, 12, 55, tone(INK.info,.30), ''));
       ctx.save();
-      ctx.fillStyle = INK.line; ctx.font = '11px Inter'; ctx.textAlign = 'center';
+      ctx.fillStyle = INK.line; ctx.font = '12px Inter'; ctx.textAlign = 'center';
       ctx.translate(cx(16), cy(W / 2)); ctx.rotate(-Math.PI / 2);
-      ctx.fillText('Front absorbers, 3 × 10 cm', 0, 0);
+      ctx.fillText('Front absorbers, 3 panels', 0, 0);
       ctx.restore();
 
       const spkX = spkWall;
@@ -1304,7 +1308,7 @@
       panel(L - 22, W - 65, 10, 40, tone(INK.muted,.9), '', true);
 
       ctx.save();
-      ctx.fillStyle = INK.dim; ctx.font = '11px Inter'; ctx.textAlign = 'center';
+      ctx.fillStyle = INK.dim; ctx.font = '12px Inter'; ctx.textAlign = 'center';
       ctx.translate(cx(L - 26), cy(W / 2)); ctx.rotate(-Math.PI / 2);
       ctx.fillText('Diffusers', 0, 0);
       ctx.restore();
@@ -1564,7 +1568,10 @@
       const canvas = document.getElementById('frCanvas');
       if (!canvas || !frData) return;
       const dpr = window.devicePixelRatio || 1;
-      const wCss = canvas.parentElement.clientWidth || 700, hCss = 180;
+      const wrap = canvas.parentElement;
+      const cs = getComputedStyle(wrap);
+      const wCss = Math.max(200, Math.floor(wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)));
+      const hCss = 180;
       canvas.width = wCss * dpr; canvas.height = hCss * dpr;
       canvas.style.width = wCss + 'px'; canvas.style.height = hCss + 'px';
       const ctx = canvas.getContext('2d');
@@ -1596,7 +1603,7 @@
       roomModes().filter(m => m.n <= 2 && m.f >= FR_F0 && m.f <= FR_F1).forEach(m => {
         ctx.strokeStyle = INK.dim;
         ctx.beginPath(); ctx.moveTo(fx(m.f), hCss - padB); ctx.lineTo(fx(m.f), hCss - padB - 6); ctx.stroke();
-        ctx.fillStyle = INK.dim; ctx.font = '11px JetBrains Mono';
+        ctx.fillStyle = INK.dim; ctx.font = '12px JetBrains Mono';
         ctx.fillText(m.dim + m.n, fx(m.f), hCss - padB - 8);
       });
 
@@ -1651,8 +1658,7 @@
       const tip = document.getElementById('tooltip');
       if (!canvas || !frData || !tip) return;
       const rect = canvas.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-      const wCss = canvas.width / dpr, hCss = canvas.height / dpr;
+      const wCss = rect.width;
       const padL = 34, padR = 10, padT = 24, padB = 20;
       const x = e.clientX - rect.left;
       const f = Math.round(FR_F0 + (x - padL) / (wCss - padL - padR) * (FR_F1 - FR_F0));
@@ -1662,12 +1668,15 @@
       const i = f - FR_F0;
       frHover = { x: padL + (f - FR_F0) / (FR_F1 - FR_F0) * (wCss - padL - padR) };
       drawFR();
-      const wrap = canvas.parentElement.getBoundingClientRect();
+      const wrap = canvas.parentElement;
+      const wrapRect = wrap.getBoundingClientRect();
       tip.innerHTML = f + ' Hz<br>treated ' + frData.tr[i].toFixed(1) + ' dB<br>untreated ' + frData.un[i].toFixed(1) + ' dB';
       tip.style.display = 'block';
       const tw = tip.offsetWidth;
-      tip.style.left = Math.min(Math.max(frHover.x - tw / 2 + 20, 4), Math.max(4, wrap.width - tw - 4)) + 'px';
-      tip.style.top = '56px';
+      const localX = (rect.left - wrapRect.left - wrap.clientLeft) + frHover.x;
+      const localY = (rect.top - wrapRect.top - wrap.clientTop) + 8;
+      tip.style.left = Math.min(Math.max(localX - tw / 2, 4), Math.max(4, wrapRect.width - tw - 4)) + 'px';
+      tip.style.top = localY + 'px';
     }
     function frHoverEnd() {
       frHover = null;
@@ -1776,8 +1785,8 @@
       ctx.beginPath(); ctx.moveTo(cx(FW / 2), cy(0)); ctx.lineTo(cx(FW / 2), cy(FH)); ctx.stroke();
       ctx.setLineDash([]);
 
-      // Speaker face dimensions: ADAM A7V 340mm H x 200mm W
-      const spkFaceH = 34.0;  // cm
+      // Speaker face dimensions: ADAM A7V 337mm H x 200mm W
+      const spkFaceH = 33.7;  // cm
       const spkFaceW = 20.0;  // cm
       // Speakers sit on speaker stands ~90cm, so bottom of speaker at ~90cm from floor,
       // but we just center them vertically around ear height for clarity
@@ -1826,7 +1835,7 @@
       drawSpkFront(W / 2 + spkOffset, 'R');
 
       // Dimension annotations
-      ctx.fillStyle = INK.dim; ctx.font = '11px JetBrains Mono'; ctx.textAlign = 'center';
+      ctx.fillStyle = INK.dim; ctx.font = '12px JetBrains Mono'; ctx.textAlign = 'center';
       const lSpkY = W / 2 - spkOffset;
       const rSpkY = W / 2 + spkOffset;
       ctx.fillText(Math.round(spkOffset * 2) + 'cm', cx((lSpkY + rSpkY) / 2), cy(FH) + 14);
@@ -1974,7 +1983,7 @@
     window.addEventListener('load', () => {
       loadSettings();
       updateScale();
-      drawRoom(); drawFrontView(); buildModeTable(); updateWaveViz(); updateSidebar(); initDrag();
+      drawRoom(); drawFrontView(); updateWaveViz(); buildModeTable(); updateSidebar(); initDrag();
       computeFR(); drawFR(); initFRClick();
       document.getElementById('btnL').textContent = 'Length ' + parseFloat((L / 100).toFixed(2)) + 'm';
       document.getElementById('btnW').textContent = 'Width ' + parseFloat((W / 100).toFixed(2)) + 'm';
