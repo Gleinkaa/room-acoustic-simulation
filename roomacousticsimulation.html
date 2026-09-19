@@ -567,7 +567,7 @@
         </div>
 
         <div class="canvas-wrap">
-          <span class="canvas-label">Modal frequency response at the listening position. The solid grey line is the active treatment state, the dashed line is the other state. Hover for a crosshair, click to set the heatmap frequency.</span>
+          <span class="canvas-label">Modal frequency response at the listening position. The solid line is the active treatment state, the dashed line is the other state. Hover for a crosshair, click to set the heatmap frequency.</span>
           <canvas id="frCanvas" height="180"></canvas>
         </div>
 
@@ -1692,7 +1692,7 @@
       if (!canvas || !frData || !tip) return;
       const rect = canvas.getBoundingClientRect();
       const wCss = rect.width;
-      const padL = 34, padR = 10, padT = 24, padB = 20;
+      const padL = 34, padR = 10;
       const x = e.clientX - rect.left;
       const f = Math.round(FR_F0 + (x - padL) / (wCss - padL - padR) * (FR_F1 - FR_F0));
       if (x < padL || f < FR_F0 || f > FR_F1 || !frData.tr[f - FR_F0]) {
