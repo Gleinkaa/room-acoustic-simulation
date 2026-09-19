@@ -1135,7 +1135,8 @@
 
       ctx.fillStyle = INK.dim; ctx.font = '12px Inter'; ctx.textAlign = 'center';
       ctx.fillText(`${W} cm width`, cx(L / 2), cy(0) - 8);
-      ctx.fillText(`${L} cm length`, cx(L / 2), cy(W) + 18);
+      ctx.textAlign = 'left';
+      ctx.fillText(`${L} cm length`, 10, ch - 10);
 
       ctx.strokeStyle = tone(INK.line,.25); ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
       ctx.beginPath(); ctx.moveTo(cx(0), cy(W / 2)); ctx.lineTo(cx(L), cy(W / 2)); ctx.stroke();
@@ -1510,7 +1511,7 @@
       const devCol = Math.abs(dev) > 6 ? INK.crit : Math.abs(dev) > 3 ? INK.warn : INK.good;
       ctx.font = '12px JetBrains Mono'; ctx.textAlign = 'right';
       ctx.fillStyle = devCol;
-      ctx.fillText(`listener ${dev >= 0 ? '+' : ''}${dev.toFixed(1)} dB vs room avg @ ${freq} Hz`, cw - 10, ch - 22);
+      ctx.fillText(`listener ${dev >= 0 ? '+' : ''}${dev.toFixed(1)} dB vs room avg @ ${freq} Hz`, cw - 10, ch - 42);
       ctx.fillStyle = INK.dim; ctx.font = '12px Inter';
       ctx.fillText(`Green's function, ${nModes} modes at or below ${Math.round(fmax)} Hz, both speakers coherent`, cw - 10, ch - 26);
       ctx.fillText(`RT60 ${rt60For(freq, showTreatment).toFixed(2)} s (${showTreatment ? 'treated' : 'untreated'}), ear height 1.2 m`, cw - 10, ch - 10);
@@ -1875,8 +1876,12 @@
       const dim = currentDim === 'L' ? L : currentDim === 'W' ? W : H;
       const lambda = SPEED / freq;
       const halfLambdas = dim / (lambda / 2);
-      canvas.width = canvas.parentElement.clientWidth || 600;
-      const w = canvas.width, h = canvas.height || 180;
+      const wrap = canvas.parentElement;
+      const cs = getComputedStyle(wrap);
+      const w = Math.max(200, Math.floor(wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)));
+      canvas.width = w;
+      canvas.style.width = w + 'px';
+      const h = canvas.height || 180;
       ctx.fillStyle = INK.bg; ctx.fillRect(0, 0, w, h);
 
       // Draw standing wave
