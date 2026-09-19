@@ -186,12 +186,13 @@
       flex-direction: column;
       gap: 12px;
       min-width: 0;
+      overflow-x: auto;
     }
 
     .view-row { flex-direction: row; align-items: flex-start; gap: 16px; flex-wrap: wrap; overflow-x: auto }
     .view-col { display: flex; flex-direction: column; gap: 8px; min-width: 0 }
 
-    canvas { display: block; border-radius: 6px; max-width: 100%; height: auto }
+    canvas { display: block; border-radius: 6px; max-width: 100%; min-width: 400px; height: auto }
 
     .canvas-label {
       font-size: 13px;
@@ -1135,7 +1136,7 @@
       ctx.fillStyle = INK.dim; ctx.font = '12px Inter'; ctx.textAlign = 'center';
       ctx.fillText(`${W} cm width`, cx(L / 2), cy(0) - 8);
       ctx.textAlign = 'left';
-      ctx.fillText(`${L} cm length`, 10, ch - 10);
+      ctx.fillText(`${L} cm length`, 10, ch - 24);
 
       ctx.strokeStyle = tone(INK.line,.25); ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
       ctx.beginPath(); ctx.moveTo(cx(0), cy(W / 2)); ctx.lineTo(cx(L), cy(W / 2)); ctx.stroke();
@@ -1506,11 +1507,12 @@
       const lj = Math.min(NY - 1, Math.round((W / 2) / step));
       const dev = db[lj * NX + li] - avgDb;
       const devCol = Math.abs(dev) > 6 ? INK.crit : Math.abs(dev) > 3 ? INK.warn : INK.good;
-      ctx.font = '12px JetBrains Mono'; ctx.textAlign = 'right';
-      ctx.fillStyle = devCol;
-      ctx.fillText(`listener ${dev >= 0 ? '+' : ''}${dev.toFixed(1)} dB vs room avg @ ${freq} Hz`, cw - 10, ch - 26);
-      ctx.fillStyle = INK.dim; ctx.font = '12px Inter';
-      ctx.fillText(`RT60 ${rt60For(freq, showTreatment).toFixed(2)} s (${showTreatment ? 'treated' : 'untreated'}), ear height 1.2 m`, cw - 10, ch - 8);
+      ctx.font = '12px JetBrains Mono'; ctx.textAlign = 'left';
+      const devStr = `listener ${dev >= 0 ? '+' : ''}${dev.toFixed(1)} dB`;
+      const rtStr = `, RT60 ${rt60For(freq, showTreatment).toFixed(2)} s`;
+      const capX = cw - 8 - ctx.measureText(devStr + rtStr).width;
+      ctx.fillStyle = devCol; ctx.fillText(devStr, capX, ch - 6);
+      ctx.fillStyle = INK.dim; ctx.fillText(rtStr, capX + ctx.measureText(devStr).width, ch - 6);
     }
 
     // ===== FREQUENCY RESPONSE AT LISTENER (modal transfer function) =====
@@ -1568,7 +1570,7 @@
       const dpr = window.devicePixelRatio || 1;
       const wrap = canvas.parentElement;
       const cs = getComputedStyle(wrap);
-      const wCss = Math.max(200, Math.floor(wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)));
+      const wCss = Math.max(400, Math.floor(wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)));
       const hCss = 180;
       canvas.width = wCss * dpr; canvas.height = hCss * dpr;
       canvas.style.width = wCss + 'px'; canvas.style.height = hCss + 'px';
@@ -1634,19 +1636,30 @@
           ctx.fillStyle = INK.line;
           ctx.beginPath(); ctx.arc(fx(selectedFreq), fy(v), 3, 0, Math.PI * 2); ctx.fill();
           ctx.font = '12px JetBrains Mono'; ctx.textAlign = 'left';
-          ctx.fillText(selectedFreq + ' Hz', fx(selectedFreq) + 5, padT + 8);
+          const sfLabel = selectedFreq + ' Hz';
+          const sfW = ctx.measureText(sfLabel).width;
+          let sfX = fx(selectedFreq) + 5;
+          if (sfX + sfW > wCss - 4) sfX = fx(selectedFreq) - 5 - sfW;
+          ctx.fillText(sfLabel, sfX, padT + 8);
         }
       }
       // legend: one drawn line sample per series, each with its word
       ctx.font = '12px Inter'; ctx.textAlign = 'left';
       const lgY = padT - 9;
+      const tw = ctx.measureText('treated').width;
+      const uw = ctx.measureText('untreated').width;
+      const legGap = 6, legLine = 22, legSpace = 16;
+      const uLineRight = wCss - 8 - uw - legGap;
+      const uLineLeft = uLineRight - legLine;
+      const tLineRight = uLineLeft - legSpace - tw - legGap;
+      const tLineLeft = tLineRight - legLine;
       ctx.strokeStyle = INK.line; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(wCss - 152, lgY); ctx.lineTo(wCss - 130, lgY); ctx.stroke();
-      ctx.fillStyle = INK.line; ctx.fillText('treated', wCss - 124, lgY + 4);
+      ctx.beginPath(); ctx.moveTo(tLineLeft, lgY); ctx.lineTo(tLineRight, lgY); ctx.stroke();
+      ctx.fillStyle = INK.line; ctx.fillText('treated', tLineRight + legGap, lgY + 4);
       ctx.strokeStyle = INK.dim; ctx.lineWidth = 1.2; ctx.setLineDash([4, 4]);
-      ctx.beginPath(); ctx.moveTo(wCss - 66, lgY); ctx.lineTo(wCss - 44, lgY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(uLineLeft, lgY); ctx.lineTo(uLineRight, lgY); ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillStyle = INK.dim; ctx.fillText('untreated', wCss - 38, lgY + 4);
+      ctx.fillStyle = INK.dim; ctx.fillText('untreated', uLineRight + legGap, lgY + 4);
     }
 
     // crosshair + tooltip: the house rule for every line chart
@@ -1872,7 +1885,7 @@
       const halfLambdas = dim / (lambda / 2);
       const wrap = canvas.parentElement;
       const cs = getComputedStyle(wrap);
-      const w = Math.max(200, Math.floor(wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)));
+      const w = Math.max(400, Math.floor(wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)));
       const h = 180;
       const dpr = window.devicePixelRatio || 1;
       canvas.width = w * dpr;
@@ -1913,15 +1926,19 @@
       ctx.beginPath(); ctx.moveTo(listenX, 0); ctx.lineTo(listenX, h); ctx.stroke();
       ctx.setLineDash([]);
       ctx.fillStyle = INK.line; ctx.font = '12px Inter'; ctx.textAlign = 'center';
-      ctx.fillText(currentDim === 'L' ? 'Listener at ' + Math.round(listenPos) + ' cm' : 'Centre line', listenX, 16);
+      const markerText = currentDim === 'L' ? 'Listener at ' + Math.round(listenPos) + ' cm' : 'Centre line';
+      const markerW = ctx.measureText(markerText).width;
+      const markerX = Math.min(Math.max(listenX, markerW / 2 + 4), w - markerW / 2 - 4);
+      ctx.fillText(markerText, markerX, 30);
       // Pressure at listener
       const pAtListen = Math.sin(2 * Math.PI * (currentDim === 'L' ? listenPos : dim / 2) / lambda);
       const pct = Math.abs(pAtListen) * 100;
       const pColor = pct > 70 ? INK.crit : pct > 35 ? INK.warn : INK.good;
       ctx.fillStyle = pColor; ctx.font = 'bold 12px JetBrains Mono'; ctx.textAlign = 'right';
-      ctx.fillText('Pressure at the listener ' + (pct.toFixed(0)) + '%', w - 8, 16);
+      ctx.fillText('Pressure at listener ' + (pct.toFixed(0)) + '%', w - 8, 16);
       ctx.fillStyle = INK.dim; ctx.font = '12px JetBrains Mono'; ctx.textAlign = 'left';
-      ctx.fillText(`${freq} Hz, wavelength ${Math.round(lambda)} cm, ${dim} cm ${currentDim === 'L' ? 'length' : currentDim === 'W' ? 'width' : 'height'}, ${halfLambdas.toFixed(1)} half waves`, 10, h - 10);
+      ctx.fillText(`${freq} Hz, wavelength ${Math.round(lambda)} cm`, 10, h - 28);
+      ctx.fillText(`${dim} cm ${currentDim === 'L' ? 'length' : currentDim === 'W' ? 'width' : 'height'}, ${halfLambdas.toFixed(1)} half waves`, 10, h - 10);
     }
 
     function setDim(d) {
