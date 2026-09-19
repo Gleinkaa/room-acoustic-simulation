@@ -192,8 +192,7 @@
     .view-row { flex-direction: row; align-items: flex-start; gap: 16px; flex-wrap: wrap; overflow-x: auto }
     .view-col { display: flex; flex-direction: column; gap: 8px; min-width: 0 }
 
-    canvas { display: block; border-radius: 6px; max-width: 100%; height: auto }
-    #frCanvas, #waveCanvas { min-width: 400px }
+    canvas { display: block; border-radius: 6px }
 
     .canvas-label {
       font-size: 13px;
@@ -443,8 +442,6 @@
       z-index: 10;
     }
 
-    .chart-wrap { position: relative }
-
     /* ---------- axial summary bars ---------- */
     .sw-bar-wrap { display: flex; flex-direction: column; gap: 4px }
     .sw-bar-label {
@@ -558,7 +555,7 @@
             <input type="number" id="inputDeskD" value="70" onchange="applyDimensions()"></div>
         </div>
 
-        <div class="canvas-wrap view-row chart-wrap">
+        <div class="canvas-wrap view-row">
           <div class="view-col">
             <span class="canvas-label">Top-down view. Drag the listening position, the speaker wall distance, or the speaker spread. Drawn panel strips are schematic; the panel count summary gives the product sizes.</span>
             <canvas id="roomCanvas"></canvas>
@@ -569,7 +566,7 @@
           </div>
         </div>
 
-        <div class="canvas-wrap chart-wrap">
+        <div class="canvas-wrap">
           <span class="canvas-label">Modal frequency response at the listening position. The solid grey line is the active treatment state, the dashed line is the other state. Hover for a crosshair, click to set the heatmap frequency.</span>
           <canvas id="frCanvas" height="180"></canvas>
         </div>
@@ -612,7 +609,7 @@
             </div>
           </div>
         </div>
-        <div class="canvas-wrap chart-wrap">
+        <div class="canvas-wrap">
           <span class="canvas-label">Pressure distribution along the selected dimension, with the listening position marked.</span>
           <canvas id="waveCanvas" height="180"></canvas>
         </div>
@@ -1107,6 +1104,7 @@
       canvas.width = cw * dpr;
       canvas.height = ch * dpr;
       canvas.style.width = `${cw}px`;
+      canvas.style.height = `${ch}px`;
 
       const ctx = canvas.getContext('2d');
       ctx.scale(dpr, dpr);
@@ -1521,7 +1519,7 @@
       const dev = db[lj * NX + li] - avgDb;
       const devCol = Math.abs(dev) > 6 ? INK.crit : Math.abs(dev) > 3 ? INK.warn : INK.good;
       ctx.font = '12px JetBrains Mono'; ctx.textAlign = 'left';
-      const devStr = `listener ${dev >= 0 ? '+' : ''}${dev.toFixed(1)} dB`;
+      const devStr = `listener ${dev >= 0 ? '+' : ''}${dev.toFixed(1)} dB vs avg @ ${freq} Hz`;
       const rtStr = `, RT60 ${rt60For(freq, showTreatment).toFixed(2)} s`;
       const capX = cw - 8 - ctx.measureText(devStr + rtStr).width;
       ctx.fillStyle = devCol; ctx.fillText(devStr, capX, ch - 6);
@@ -1767,6 +1765,7 @@
       canvas.width = fw * dpr;
       canvas.height = fh * dpr;
       canvas.style.width = `${fw}px`;
+      canvas.style.height = `${fh}px`;
 
       const ctx = canvas.getContext('2d');
       ctx.scale(dpr, dpr);
@@ -1963,6 +1962,8 @@
       canvas.style.width = w + 'px';
       canvas.style.height = h + 'px';
       waveHover = null;
+      const tip = document.getElementById('tooltip');
+      if (tip) tip.style.display = 'none';
       drawWave();
       if (showHeatmap) drawRoom();
       drawFR();
