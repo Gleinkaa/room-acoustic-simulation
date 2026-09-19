@@ -226,7 +226,7 @@
     .dot-trap { background: color-mix(in oklab, var(--foreground) 18%, transparent); border: 1px solid var(--info) }
     .dot-cloud { background: color-mix(in oklab, var(--info) 16%, transparent) }
     .dot-muted { background: var(--muted); border: 1px solid var(--border) }
-    .dot-diffuser { background: color-mix(in oklab, var(--muted) 90%, transparent); border: 1px solid var(--border) }
+    .dot-diffuser { background: repeating-linear-gradient(45deg, var(--muted) 0 3px, var(--muted-foreground) 3px 5px) }
     .dot-ring { background: transparent; border: 2px solid var(--foreground); border-radius: 999px }
 
     /* ---------- cards ---------- */
@@ -267,6 +267,7 @@
     .stat-val { font-size: 14px; font-variant-numeric: tabular-nums; text-align: right }
 
     .stat-val.mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 14px }
+    .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; font-size: 14px }
     .stat-val.good { color: var(--good) }
     .stat-val.warn { color: var(--warn) }
     .stat-val.bad { color: var(--crit) }
