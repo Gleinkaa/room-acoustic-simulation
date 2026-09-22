@@ -1,12 +1,12 @@
 # Studio Acoustic Simulation
 
-[![Platform: Web](https://img.shields.io/badge/Platform-Web%20Browser-blue.svg)](roomacousticsimulation.html)
-[![Zero Dependencies](https://img.shields.io/badge/Dependencies-None%20(Pure%20Vanilla%20JS)-green.svg)](roomacousticsimulation.html)
+[![Platform: Web](https://img.shields.io/badge/Platform-Web%20Browser-blue.svg)](room-acoustic-simulation.html)
+[![Zero Dependencies](https://img.shields.io/badge/Dependencies-None%20(Pure%20Vanilla%20JS)-green.svg)](room-acoustic-simulation.html)
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
 
 An interactive, physics-based studio acoustics and room mode simulator designed for rectangular control rooms, nearfield monitoring setups (featuring the **ADAM Audio A7V**), and low-end critical electronic/psytrance music production.
 
-Built as a **single, self-contained HTML5 file** (`roomacousticsimulation.html`) with zero external dependencies, no build steps, and instant local execution in any modern web browser.
+Built as a **single, self-contained HTML5 file** (`room-acoustic-simulation.html`) with zero external dependencies, no build steps, and instant local execution in any modern web browser.
 
 ---
 
@@ -54,7 +54,7 @@ This simulator bridges the gap between theoretical acoustics and practical DIY s
 
 ## Key Features
 
-- **Single-File Zero-Dependency Architecture:** Open `roomacousticsimulation.html` directly in any modern browser (`file://`). No `npm`, no bundlers, no server, and no internet connection required.
+- **Single-File Zero-Dependency Architecture:** Open `room-acoustic-simulation.html` directly in any modern browser (`file://`). No `npm`, no bundlers, no server, and no internet connection required.
 - **Interactive 2D Acoustic Heatmap:** 3 cm spatial grid resolution calculating the steady-state acoustic pressure distribution across the room floor plan for any frequency between 20 Hz and 400 Hz.
 - **Dual-View Visualization:** Top-down room plan paired with a front elevation view showing monitor height, ear height (1.20 m seated reference), ceiling cloud depth, and stereo spread.
 - **Listener Modal Frequency Response (20–300 Hz):** Live frequency response transfer function computed at the listener's exact ear location, comparing **Treated** vs. **Untreated** acoustic conditions side by side.
@@ -77,20 +77,20 @@ This simulator bridges the gap between theoretical acoustics and practical DIY s
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/Gleinkaa/simulation.git
-   cd simulation
+   git clone https://github.com/Gleinkaa/room-acoustic-simulation.git
+   cd room-acoustic-simulation
    ```
 2. **Open in browser:**
-   Double-click `roomacousticsimulation.html` or open it from the terminal:
+   Double-click `room-acoustic-simulation.html` or open it from the terminal:
    ```bash
    # On Linux
-   xdg-open roomacousticsimulation.html
+   xdg-open room-acoustic-simulation.html
 
    # On macOS
-   open roomacousticsimulation.html
+   open room-acoustic-simulation.html
 
    # On Windows
-   start roomacousticsimulation.html
+   start room-acoustic-simulation.html
    ```
 
 ### 3-Minute Quick Setup Workflow
