@@ -339,5 +339,5 @@ For an in-depth walkthrough, step-by-step room optimization recipes, DIY panel c
 
 ## Contributing & License
 
-- **License:** MIT License. Free to use, adapt, and build upon.
+- **License:** MIT — see [LICENSE](LICENSE). Free to use, adapt, and build upon.
 - **Contributions:** Pull requests and suggestions for acoustic models, UI refinements, or additional monitor profiles are warmly welcomed.
